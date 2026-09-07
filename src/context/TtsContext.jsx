@@ -4,15 +4,24 @@ import { ttsApi } from '../api/ttsApi';
 import { usageApi } from '../api/usageApi';
 import { DEFAULT_VOICE_SETTINGS } from '../utils/constants';
 
+const DEFAULT_INITIAL_VOICES = [
+  { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel - Calming & Professional', provider: 'elevenlabs', gender: 'female', accent: 'american', category: 'narrative' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah - Mature, Reassuring', provider: 'elevenlabs', gender: 'female', accent: 'american', category: 'premade' },
+  { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni - Deep Storyteller', provider: 'elevenlabs', gender: 'male', accent: 'american', category: 'narration' },
+  { id: 'alloy', name: 'Alloy - Versatile Neutral', provider: 'openai', gender: 'neutral', accent: 'american', category: 'versatile' },
+  { id: 'echo', name: 'Echo - Warm Male', provider: 'openai', gender: 'male', accent: 'american', category: 'warm' },
+];
+
 const TtsContext = createContext(null);
 
 export const TtsProvider = ({ children }) => {
   const [text, setText] = useState('');
-  const [voices, setVoices] = useState([]);
-  const [selectedVoice, setSelectedVoice] = useState(null);
+  const [voices, setVoices] = useState(DEFAULT_INITIAL_VOICES);
+  const [selectedVoice, setSelectedVoice] = useState(DEFAULT_INITIAL_VOICES[0]);
   const [voiceSettings, setVoiceSettings] = useState(DEFAULT_VOICE_SETTINGS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeAudio, setActiveAudio] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [history, setHistory] = useState([]);
   const [quota, setQuota] = useState({
     tier: 'free',
@@ -32,16 +41,16 @@ export const TtsProvider = ({ children }) => {
   const fetchVoices = async (filters = {}) => {
     try {
       const res = await voiceApi.getVoices(filters);
-      if (res.success && res.data) {
+      if (res.success && res.data && res.data.length > 0) {
         setVoices(res.data);
-        if (!selectedVoice && res.data.length > 0) {
-          // Default to first ElevenLabs voice or first voice in list
-          const defaultV = res.data.find((v) => v.provider === 'elevenlabs') || res.data[0];
-          setSelectedVoice(defaultV);
-        }
+        setSelectedVoice((current) => {
+          if (!current) return res.data[0];
+          const matched = res.data.find((v) => v.id === current.id);
+          return matched || res.data[0];
+        });
       }
     } catch (err) {
-      console.error('Failed to load voices:', err);
+      console.warn('Backend server connecting or using initial voices catalog:', err.message);
     }
   };
 
@@ -52,7 +61,7 @@ export const TtsProvider = ({ children }) => {
         setQuota(res.data);
       }
     } catch (err) {
-      console.error('Failed to load credit quota:', err);
+      console.warn('Using default quota:', err.message);
     }
   };
 
@@ -63,18 +72,18 @@ export const TtsProvider = ({ children }) => {
         setHistory(res.data);
       }
     } catch (err) {
-      console.error('Failed to load history:', err);
+      console.warn('History load warning:', err.message);
     }
   };
 
   const generateSpeech = async (overrideText = null) => {
     const textToSynthesize = overrideText || text;
-    if (!textToSynthesize.trim()) {
-      setError('Please enter text to synthesize.');
+    if (!textToSynthesize || !textToSynthesize.trim()) {
+      setError('Please enter text into the script area before generating speech.');
       return;
     }
     if (!selectedVoice) {
-      setError('Please select a voice.');
+      setError('Please select a voice from the target voice dropdown.');
       return;
     }
 
@@ -98,20 +107,27 @@ export const TtsProvider = ({ children }) => {
 
       if (res.success && res.data) {
         const newAudio = {
+          id: res.data.generationId || `gen_${Date.now()}`,
+          audio_url: res.data.audioUrl,
           audioUrl: res.data.audioUrl,
+          duration_seconds: res.data.durationSeconds,
           durationSeconds: res.data.durationSeconds,
+          character_count: res.data.characterCount,
           characterCount: res.data.characterCount,
           provider: res.data.provider,
+          voice_name: selectedVoice.name,
           voiceName: selectedVoice.name,
+          text_content: textToSynthesize,
           text: textToSynthesize,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
         setActiveAudio(newAudio);
+        setHistory((prev) => [newAudio, ...prev]);
         fetchUsage(); // Refresh quota balance
-        fetchHistory(); // Refresh history list
+        fetchHistory(); // Sync backend history
       }
     } catch (err) {
-      setError(err.message || 'Speech generation failed. Please try again.');
+      setError(err.message || 'Speech generation failed. Please check backend server.');
     } finally {
       setIsGenerating(false);
     }
@@ -130,6 +146,8 @@ export const TtsProvider = ({ children }) => {
         isGenerating,
         activeAudio,
         setActiveAudio,
+        isPlaying,
+        setIsPlaying,
         history,
         quota,
         error,

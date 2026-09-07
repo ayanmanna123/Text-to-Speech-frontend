@@ -13,6 +13,8 @@ export const apiClient = async (endpoint, options = {}) => {
 
   if (body) {
     config.body = JSON.stringify(body);
+  } else {
+    delete config.body;
   }
 
   try {

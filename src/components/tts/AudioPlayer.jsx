@@ -4,40 +4,60 @@ import { formatTime } from '../../utils/formatters';
 import { Play, Pause, Download, Volume2, VolumeX, Sparkles, Music } from 'lucide-react';
 
 export const AudioPlayer = () => {
-  const { activeAudio } = useTtsContext();
+  const { activeAudio, isPlaying, setIsPlaying } = useTtsContext();
 
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackError, setPlaybackError] = useState(null);
 
   const audioRef = useRef(null);
 
   useEffect(() => {
-    if (activeAudio?.audioUrl) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      audioRef.current = new Audio(activeAudio.audioUrl);
-      audioRef.current.volume = volume;
+    const audioUrl = activeAudio?.audioUrl || activeAudio?.audio_url;
+    if (!audioUrl) return;
 
-      audioRef.current.onloadedmetadata = () => {
-        setDuration(audioRef.current.duration || activeAudio.durationSeconds || 0);
-      };
-
-      audioRef.current.ontimeupdate = () => {
-        setCurrentTime(audioRef.current.currentTime);
-      };
-
-      audioRef.current.onended = () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      };
-
-      // Autoplay new generated audio
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
+
+    setPlaybackError(null);
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+    audio.volume = volume;
+
+    audio.onloadedmetadata = () => {
+      setDuration(audio.duration || activeAudio.durationSeconds || activeAudio.duration_seconds || 0);
+    };
+
+    audio.ontimeupdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    audio.onended = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+
+    audio.onerror = (err) => {
+      console.warn("Audio element failed to load or play source:", audioUrl, err);
+      setIsPlaying(false);
+      setPlaybackError("Audio playback failed. The clip URL may be expired or inaccessible.");
+    };
+
+    // Autoplay active audio
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch((err) => {
+        console.warn("Autoplay blocked or failed:", err);
+        setIsPlaying(false);
+      });
+
+    return () => {
+      audio.pause();
+    };
   }, [activeAudio]);
 
   if (!activeAudio) return null;
@@ -48,8 +68,13 @@ export const AudioPlayer = () => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
-      setIsPlaying(true);
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn("Manual play failed:", err);
+          setIsPlaying(false);
+          setPlaybackError("Unable to play audio stream.");
+        });
     }
   };
 
@@ -89,6 +114,13 @@ export const AudioPlayer = () => {
 
   return (
     <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-950/20 via-card to-purple-950/20 backdrop-blur-md p-5 shadow-lg flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      
+      {playbackError && (
+        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center justify-between">
+          <span>{playbackError}</span>
+          <button type="button" onClick={() => setPlaybackError(null)} className="font-bold underline ml-2">Dismiss</button>
+        </div>
+      )}
       
       {/* Audio Info Header */}
       <div className="flex items-center justify-between">

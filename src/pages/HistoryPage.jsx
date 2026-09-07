@@ -1,5 +1,6 @@
 import React from 'react';
 import { HistoryList } from '../components/tts/HistoryList';
+import { AudioPlayer } from '../components/tts/AudioPlayer';
 import { History } from 'lucide-react';
 
 export const HistoryPage = () => {
@@ -18,6 +19,8 @@ export const HistoryPage = () => {
           Review all synthesized speech audio clips created during your session. Play, re-use text, or download audio files.
         </p>
       </div>
+
+      <AudioPlayer />
 
       <HistoryList />
     </div>
