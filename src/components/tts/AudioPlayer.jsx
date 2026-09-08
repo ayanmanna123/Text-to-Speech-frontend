@@ -198,7 +198,7 @@ export const AudioPlayer = () => {
 
       {/* Dynamic Interactive Waveform Bar Visualizer */}
       <div 
-        className="flex items-center justify-center gap-1 h-10 px-4 bg-slate-950/40 rounded-xl overflow-hidden cursor-pointer border border-violet-500/20 shadow-inner group"
+        className="flex items-center justify-center gap-1 h-10 px-4 bg-violet-500/5 hover:bg-violet-500/10 rounded-xl overflow-hidden cursor-pointer border border-violet-500/20 transition-colors group"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = e.clientX - rect.left;

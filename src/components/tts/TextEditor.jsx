@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { SAMPLE_PROMPTS } from '../../utils/constants';
-import { Trash2, Copy, Clipboard, Sparkles, AlertCircle, Type, FileText } from 'lucide-react';
+import { Trash2, Copy, Clipboard, Sparkles, AlertCircle, Type, FileText, Wand2, AlertTriangle } from 'lucide-react';
 
 export const TextEditor = () => {
   const { text, setText, isGenerating } = useTtsContext();
@@ -12,7 +12,21 @@ export const TextEditor = () => {
   const isOverLimit = charCount > maxChars;
   const progressPercent = Math.min(100, (charCount / maxChars) * 100);
 
+  // Character validation logic
+  const hasControlChars = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\u200B-\u200D\uFEFF\u202A-\u202E]/.test(text);
+  const cleanText = text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+    .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '')
+    .normalize('NFC')
+    .trim();
+  const hasSpeakableLetters = /[\p{L}\p{N}]/u.test(cleanText);
+  const isNonSpeakable = text.trim().length > 0 && !hasSpeakableLetters;
+
   const handleClear = () => setText('');
+
+  const handleSanitize = () => {
+    setText(cleanText);
+  };
 
   const handleCopy = () => {
     if (text) {
@@ -42,6 +56,18 @@ export const TextEditor = () => {
         </label>
 
         <div className="flex items-center gap-2">
+          {hasControlChars && (
+            <button
+              type="button"
+              onClick={handleSanitize}
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 font-medium transition-all"
+              title="Remove invisible/unprintable control characters"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              <span>Clean Text</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handlePaste}
@@ -90,6 +116,31 @@ export const TextEditor = () => {
           rows={7}
           className="w-full p-4 bg-transparent text-foreground placeholder:text-muted-foreground text-base focus:outline-none resize-y min-h-[160px]"
         />
+
+        {isNonSpeakable && (
+          <div className="mx-4 mb-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+              <span>Text contains only non-speakable symbols or emojis. Please enter speakable words.</span>
+            </div>
+          </div>
+        )}
+
+        {hasControlChars && !isNonSpeakable && (
+          <div className="mx-4 mb-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+              <span>Text contains unprintable control characters. Click "Clean Text" above to clean it automatically.</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleSanitize}
+              className="font-bold underline cursor-pointer text-xs shrink-0"
+            >
+              Clean Now
+            </button>
+          </div>
+        )}
 
         {/* Character Limit Progress Bar */}
         <div className="w-full bg-muted/40 h-1 overflow-hidden">

@@ -24,6 +24,18 @@ export const TtsStudio = () => {
       setError('Script text exceeds the 5,000 character limit per request.');
       return;
     }
+
+    const cleanText = text
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+      .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '')
+      .normalize('NFC')
+      .trim();
+
+    if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) {
+      setError('Script text contains only unprintable control characters or non-speakable symbols. Please enter valid speakable words or text.');
+      return;
+    }
+
     if (!selectedVoice) {
       setError('Please select a voice from the Target Voice dropdown.');
       return;
@@ -84,7 +96,7 @@ export const TtsStudio = () => {
             className={`w-full py-4 px-6 rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-3 transition-all duration-200 shadow-xl cursor-pointer ${
               isReady && !isGenerating
                 ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01] active:scale-[0.99]'
-                : 'bg-primary/80 hover:bg-primary text-primary-foreground shadow-md'
+                : 'bg-violet-600/80 hover:bg-violet-600 text-white shadow-md'
             }`}
           >
             {isGenerating ? (

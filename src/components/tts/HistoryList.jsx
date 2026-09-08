@@ -103,7 +103,7 @@ export const HistoryList = () => {
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-xs transition-all hover:scale-105 ${
                     isCurrentPlaying
                       ? 'bg-violet-600 text-white shadow-violet-500/30 ring-2 ring-violet-500/50'
-                      : 'bg-primary text-primary-foreground'
+                      : 'bg-violet-600 hover:bg-violet-500 text-white shadow-xs'
                   }`}
                   title={isCurrentPlaying ? 'Pause Audio' : 'Play Audio'}
                 >

@@ -20,9 +20,30 @@ export const TtsProvider = ({ children }) => {
   const [selectedVoice, setSelectedVoice] = useState(DEFAULT_INITIAL_VOICES[0]);
   const [voiceSettings, setVoiceSettings] = useState(DEFAULT_VOICE_SETTINGS);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeAudio, setActiveAudio] = useState(null);
+  const getLocalHistory = () => {
+    try {
+      const saved = localStorage.getItem('tts_generation_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.warn('Failed to read history from localStorage:', e);
+      return [];
+    }
+  };
+
+  const saveLocalHistory = (items) => {
+    try {
+      localStorage.setItem('tts_generation_history', JSON.stringify(items.slice(0, 50)));
+    } catch (e) {
+      console.warn('Failed to save history to localStorage:', e);
+    }
+  };
+
+  const [history, setHistory] = useState(() => getLocalHistory());
+  const [activeAudio, setActiveAudio] = useState(() => {
+    const initialHist = getLocalHistory();
+    return initialHist.length > 0 ? initialHist[0] : null;
+  });
   const [isPlaying, setIsPlaying] = useState(false);
-  const [history, setHistory] = useState([]);
   const [quota, setQuota] = useState({
     tier: 'free',
     characterQuota: 10000,
@@ -68,8 +89,25 @@ export const TtsProvider = ({ children }) => {
   const fetchHistory = async () => {
     try {
       const res = await ttsApi.getHistory();
-      if (res.success && res.data) {
-        setHistory(res.data);
+      if (res.success && res.data && res.data.length > 0) {
+        setHistory((prev) => {
+          const map = new Map();
+          [...res.data, ...prev].forEach((item) => {
+            const key = item.id || item.audio_url || item.audioUrl;
+            if (key && !map.has(key)) {
+              map.set(key, {
+                ...item,
+                audioUrl: item.audioUrl || item.audio_url,
+                audio_url: item.audio_url || item.audioUrl,
+                text: item.text || item.text_content,
+                text_content: item.text_content || item.text,
+              });
+            }
+          });
+          const merged = Array.from(map.values());
+          saveLocalHistory(merged);
+          return merged;
+        });
       }
     } catch (err) {
       console.warn('History load warning:', err.message);
@@ -123,7 +161,11 @@ export const TtsProvider = ({ children }) => {
           created_at: new Date().toISOString(),
         };
         setActiveAudio(newAudio);
-        setHistory((prev) => [newAudio, ...prev]);
+        setHistory((prev) => {
+          const updated = [newAudio, ...prev.filter((i) => i.id !== newAudio.id)];
+          saveLocalHistory(updated);
+          return updated;
+        });
         setQuota((prev) => ({
           ...prev,
           charactersUsed: prev.charactersUsed + textToSynthesize.length,
