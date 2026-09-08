@@ -116,10 +116,31 @@ export const TtsProvider = ({ children }) => {
 
   const generateSpeech = async (overrideText = null) => {
     const textToSynthesize = overrideText || text;
-    if (!textToSynthesize || !textToSynthesize.trim()) {
-      setError('Please enter text into the script area before generating speech.');
+    
+    // 1. Text must not be empty
+    if (!textToSynthesize || typeof textToSynthesize !== 'string' || !textToSynthesize.trim()) {
+      setError('Text must not be empty. Please type or paste script text before generating speech.');
       return;
     }
+
+    // 2. Text should have a maximum length
+    if (textToSynthesize.length > 5000) {
+      setError('Text exceeds the maximum allowed length of 5,000 characters per request.');
+      return;
+    }
+
+    // 3. Unsupported characters should be handled appropriately
+    const cleanText = textToSynthesize
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+      .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '')
+      .normalize('NFC')
+      .trim();
+
+    if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) {
+      setError('Text contains only unsupported symbols or unprintable characters. Please enter speakable words or text.');
+      return;
+    }
+
     if (!selectedVoice) {
       setError('Please select a voice from the target voice dropdown.');
       return;
@@ -127,6 +148,7 @@ export const TtsProvider = ({ children }) => {
 
     setIsGenerating(true);
     setError(null);
+
 
     try {
       const res = await ttsApi.generateSpeech({

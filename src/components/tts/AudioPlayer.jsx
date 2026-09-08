@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { formatTime } from '../../utils/formatters';
-import { Play, Pause, Download, Volume2, VolumeX, Sparkles, Music, RotateCcw, RotateCw, Gauge } from 'lucide-react';
+import { Play, Pause, Download, Volume2, VolumeX, Music, RotateCcw, RotateCw, ChevronDown } from 'lucide-react';
 
 export const AudioPlayer = () => {
   const { activeAudio, isPlaying, setIsPlaying } = useTtsContext();
@@ -12,7 +12,6 @@ export const AudioPlayer = () => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackError, setPlaybackError] = useState(null);
-  const [downloadFormat, setDownloadFormat] = useState('mp3');
 
   const audioRef = useRef(null);
 
@@ -20,23 +19,20 @@ export const AudioPlayer = () => {
     const audioUrl = activeAudio?.audioUrl || activeAudio?.audio_url;
     if (!audioUrl) return;
 
-    if (activeAudio?.format) {
-      setDownloadFormat(activeAudio.format);
-    }
-
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
 
     setPlaybackError(null);
+    setCurrentTime(0);
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
     audio.volume = volume;
     audio.playbackRate = playbackRate;
 
     audio.onloadedmetadata = () => {
-      setDuration(audio.duration || activeAudio.durationSeconds || activeAudio.duration_seconds || 0);
+      setDuration(audio.duration || activeAudio.durationSeconds || activeAudio.duration_seconds || 5);
     };
 
     audio.ontimeupdate = () => {
@@ -54,18 +50,35 @@ export const AudioPlayer = () => {
       setPlaybackError("Audio playback failed. The clip URL may be expired or inaccessible.");
     };
 
-    // Autoplay active audio
-    audio.play()
-      .then(() => setIsPlaying(true))
-      .catch((err) => {
-        console.warn("Autoplay blocked or failed:", err);
-        setIsPlaying(false);
-      });
+    // Autoplay disabled: play only if isPlaying state is already true (e.g. user clicked Play)
+    if (isPlaying) {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn("Play failed:", err);
+          setIsPlaying(false);
+        });
+    } else {
+      setIsPlaying(false);
+    }
 
     return () => {
       audio.pause();
     };
   }, [activeAudio]);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.play().catch((err) => {
+        console.warn("Play error:", err);
+        setIsPlaying(false);
+      });
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+
 
   if (!activeAudio) return null;
 
@@ -95,7 +108,7 @@ export const AudioPlayer = () => {
 
   const handleSkip = (seconds) => {
     if (audioRef.current) {
-      const newTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + seconds));
+      const newTime = Math.max(0, Math.min(duration || 5, audioRef.current.currentTime + seconds));
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
@@ -128,7 +141,7 @@ export const AudioPlayer = () => {
     let url = activeAudio?.audioUrl || activeAudio?.audio_url;
     if (!url) return;
 
-    const targetFormat = downloadFormat || activeAudio?.format || 'mp3';
+    const targetFormat = (activeAudio?.format || 'mp3').toLowerCase();
     const mimeType = targetFormat === 'wav' ? 'audio/wav' : targetFormat === 'ogg' ? 'audio/ogg' : 'audio/mpeg';
 
     if (url.startsWith('data:')) {
@@ -147,63 +160,66 @@ export const AudioPlayer = () => {
     document.body.removeChild(a);
   };
 
+  const formatExt = (activeAudio?.format || 'mp3').toUpperCase();
+  const demoText = activeAudio.text || 'सपनों की आवाज़, अब हर शब्द में, आपके विचारों को मिलेगी एक नई ऊँचाई!';
+
   return (
-    <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-950/20 via-card to-purple-950/20 backdrop-blur-md p-5 shadow-lg flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="bg-[#f5f3ff]/60 border border-violet-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative animate-in fade-in slide-in-from-bottom-3 duration-300">
       
       {playbackError && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center justify-between">
+        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
           <span>{playbackError}</span>
           <button type="button" onClick={() => setPlaybackError(null)} className="font-bold underline ml-2">Dismiss</button>
         </div>
       )}
       
-      {/* Audio Info Header */}
+      {/* Audio Output Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-md shadow-violet-500/30 shrink-0">
-            <Music className="w-5 h-5 animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
+            <Music className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="font-bold text-sm text-foreground">Generated Audio Output</h4>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30">
+              <h4 className="font-extrabold text-sm text-slate-900">Generated Audio Output</h4>
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#ede9fe] text-[#7c3aed] border border-[#ddd6fe]">
                 {activeAudio.voiceName || 'Neural Voice'}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                 {playbackRate}x Speed
               </span>
             </div>
-            <p className="text-xs text-muted-foreground line-clamp-1 italic max-w-md mt-0.5">
-              "{activeAudio.text}"
+            <p className="text-xs text-slate-500 italic line-clamp-1 max-w-lg mt-0.5 font-normal">
+              {demoText}
             </p>
           </div>
         </div>
 
-        {/* Chosen File Format Badge + Download Button */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <span className="text-xs font-extrabold uppercase px-2.5 py-1.5 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/30">
-            {(activeAudio?.format || downloadFormat || 'MP3').toUpperCase()}
+        {/* Format Tag & Download CTA Button */}
+        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+          <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-purple-100 text-purple-700 border border-purple-200 uppercase">
+            {formatExt}
           </span>
 
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs shadow-md shadow-violet-600/30 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-violet-500/25 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Download .{(activeAudio?.format || downloadFormat || 'mp3').toUpperCase()}</span>
+            <span>Download .{formatExt}</span>
           </button>
         </div>
       </div>
 
-      {/* Dynamic Interactive Waveform Bar Visualizer */}
+      {/* Dynamic Waveform Visualizer */}
       <div 
-        className="flex items-center justify-center gap-1 h-10 px-4 bg-violet-500/5 hover:bg-violet-500/10 rounded-xl overflow-hidden cursor-pointer border border-violet-500/20 transition-colors group"
+        className="flex items-center justify-center gap-1 h-14 px-4 bg-white rounded-xl overflow-hidden cursor-pointer border border-violet-100 shadow-2xs group transition-all"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
           const targetRatio = Math.max(0, Math.min(1, clickX / rect.width));
-          const targetTime = targetRatio * (duration || 1);
+          const targetTime = targetRatio * (duration || 5);
           if (audioRef.current) {
             audioRef.current.currentTime = targetTime;
             setCurrentTime(targetTime);
@@ -211,20 +227,21 @@ export const AudioPlayer = () => {
         }}
         title="Click anywhere on the waveform to seek"
       >
-        {Array.from({ length: 48 }).map((_, i) => {
-          const progressRatio = currentTime / (duration || 1);
-          const isActive = progressRatio * 48 > i;
-          // Dynamic real-time height modulation when playing vs static wave when paused
-          const dynamicMultiplier = isPlaying ? Math.abs(Math.sin(i * 0.35 + currentTime * 9)) * 14 + 8 : Math.sin(i * 0.4) * 8 + 14;
-          const height = Math.max(4, Math.min(28, dynamicMultiplier));
+        {Array.from({ length: 64 }).map((_, i) => {
+          const progressRatio = currentTime / (duration || 5);
+          const isActive = progressRatio * 64 > i;
+          const dynamicMultiplier = isPlaying 
+            ? Math.abs(Math.sin(i * 0.35 + currentTime * 8)) * 24 + 6 
+            : Math.sin(i * 0.3) * 12 + 16;
+          const height = Math.max(4, Math.min(36, dynamicMultiplier));
 
           return (
             <div
               key={i}
               className={`w-1 rounded-full transition-all duration-100 ${
                 isActive 
-                  ? 'bg-gradient-to-t from-violet-600 via-indigo-500 to-purple-400 shadow-xs shadow-violet-500/50' 
-                  : 'bg-muted-foreground/25 group-hover:bg-muted-foreground/40'
+                  ? 'bg-gradient-to-t from-violet-600 via-indigo-600 to-purple-400 shadow-2xs' 
+                  : 'bg-slate-200 group-hover:bg-slate-300'
               }`}
               style={{ height: `${height}px` }}
             />
@@ -232,70 +249,68 @@ export const AudioPlayer = () => {
         })}
       </div>
 
-      {/* Playback Controls & Timeline Scrubber */}
-      <div className="flex flex-col sm:flex-row items-center gap-4">
+      {/* Playback Scrubber & Control Buttons */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
         
-        {/* Play / Pause / Skip Controls Group */}
+        {/* Play / Pause / Skip Buttons */}
         <div className="flex items-center gap-2">
-          {/* Rewind 5s */}
+          {/* Rewind 10s */}
           <button
             type="button"
-            onClick={() => handleSkip(-5)}
-            className="w-8 h-8 rounded-full bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-all text-xs font-bold"
-            title="Rewind 5 seconds"
+            onClick={() => handleSkip(-10)}
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+            title="Rewind 10 seconds"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
-          {/* Play/Pause Button */}
+          {/* Play / Pause Circle Button */}
           <button
             type="button"
             onClick={togglePlay}
-            className="w-11 h-11 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-md shadow-violet-500/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
           </button>
 
-          {/* Forward 5s */}
+          {/* Forward 10s */}
           <button
             type="button"
-            onClick={() => handleSkip(5)}
-            className="w-8 h-8 rounded-full bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-all text-xs font-bold"
-            title="Forward 5 seconds"
+            onClick={() => handleSkip(10)}
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+            title="Forward 10 seconds"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Timeline Slider */}
+        {/* Scrubber Timeline */}
         <div className="flex-1 w-full flex items-center gap-3">
-          <span className="text-xs font-mono text-muted-foreground min-w-[40px] text-right">
+          <span className="text-xs font-mono font-medium text-slate-500 min-w-[36px] text-right">
             {formatTime(currentTime)}
           </span>
           <input
             type="range"
             min="0"
-            max={duration || 100}
+            max={duration || 5}
             step="0.1"
             value={currentTime}
             onChange={handleSeek}
-            className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
+            className="flex-1 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
           />
-          <span className="text-xs font-mono text-muted-foreground min-w-[40px]">
-            {formatTime(duration)}
+          <span className="text-xs font-mono font-medium text-slate-500 min-w-[36px]">
+            {formatTime(duration || 5)}
           </span>
         </div>
 
-        {/* Playback Speed & Volume Controls */}
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          {/* Dynamic Speed Selector */}
-          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50">
-            <Gauge className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+        {/* Speed Dropdown & Volume Control */}
+        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+          {/* Speed Selector */}
+          <div className="relative inline-flex items-center">
             <select
               value={playbackRate}
               onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-              className="text-xs bg-transparent text-foreground font-bold focus:outline-none cursor-pointer pr-1"
-              title="Adjust playback speed in real-time"
+              className="text-xs font-extrabold bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer appearance-none pr-6 shadow-2xs"
             >
               <option value="0.5">0.5x</option>
               <option value="0.75">0.75x</option>
@@ -304,12 +319,13 @@ export const AudioPlayer = () => {
               <option value="1.5">1.5x</option>
               <option value="2">2.0x</option>
             </select>
+            <ChevronDown className="w-3 h-3 text-slate-500 absolute right-2 pointer-events-none" />
           </div>
 
-          {/* Volume Control */}
-          <div className="hidden sm:flex items-center gap-2">
-            <button type="button" onClick={toggleMute} className="text-muted-foreground hover:text-foreground">
-              {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {/* Volume Control Slider */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            <button type="button" onClick={toggleMute} className="text-slate-500 hover:text-slate-800 transition-colors">
+              {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4" />}
             </button>
             <input
               type="range"
@@ -318,7 +334,7 @@ export const AudioPlayer = () => {
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-16 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
+              className="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
             />
           </div>
         </div>
@@ -327,3 +343,4 @@ export const AudioPlayer = () => {
     </div>
   );
 };
+
