@@ -119,10 +119,16 @@ export const TtsProvider = ({ children }) => {
           voiceName: selectedVoice.name,
           text_content: textToSynthesize,
           text: textToSynthesize,
+          format: voiceSettings.format || res.data.format || 'mp3',
           created_at: new Date().toISOString(),
         };
         setActiveAudio(newAudio);
         setHistory((prev) => [newAudio, ...prev]);
+        setQuota((prev) => ({
+          ...prev,
+          charactersUsed: prev.charactersUsed + textToSynthesize.length,
+          charactersRemaining: Math.max(0, prev.charactersRemaining - textToSynthesize.length),
+        }));
         fetchUsage(); // Refresh quota balance
         fetchHistory(); // Sync backend history
       }

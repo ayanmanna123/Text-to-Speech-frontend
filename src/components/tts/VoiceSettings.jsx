@@ -101,28 +101,39 @@ export const VoiceSettings = () => {
         {/* Output Audio Format Selector */}
         <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-muted/40 border border-border/50">
           <span className="font-medium text-xs text-foreground">Output Format</span>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-1.5 mt-1">
             <button
               type="button"
               onClick={() => updateSetting('format', 'mp3')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 voiceSettings.format === 'mp3'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  ? 'bg-violet-600 text-white shadow-xs'
                   : 'bg-background hover:bg-muted text-muted-foreground'
               }`}
             >
-              MP3 (Compressed)
+              MP3
             </button>
             <button
               type="button"
               onClick={() => updateSetting('format', 'wav')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 voiceSettings.format === 'wav'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  ? 'bg-violet-600 text-white shadow-xs'
                   : 'bg-background hover:bg-muted text-muted-foreground'
               }`}
             >
-              WAV (Lossless)
+              WAV
+            </button>
+            <button
+              type="button"
+              onClick={() => updateSetting('format', 'ogg')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                voiceSettings.format === 'ogg'
+                  ? 'bg-violet-600 text-white shadow-xs'
+                  : 'bg-background hover:bg-muted text-muted-foreground'
+              }`}
+            >
+              OGG
             </button>
           </div>
         </div>

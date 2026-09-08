@@ -20,6 +20,10 @@ export const AudioPlayer = () => {
     const audioUrl = activeAudio?.audioUrl || activeAudio?.audio_url;
     if (!audioUrl) return;
 
+    if (activeAudio?.format) {
+      setDownloadFormat(activeAudio.format);
+    }
+
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -121,11 +125,23 @@ export const AudioPlayer = () => {
   };
 
   const handleDownload = () => {
-    if (!activeAudio?.audioUrl) return;
+    let url = activeAudio?.audioUrl || activeAudio?.audio_url;
+    if (!url) return;
+
+    const targetFormat = downloadFormat || activeAudio?.format || 'mp3';
+    const mimeType = targetFormat === 'wav' ? 'audio/wav' : targetFormat === 'ogg' ? 'audio/ogg' : 'audio/mpeg';
+
+    if (url.startsWith('data:')) {
+      const parts = url.split(',');
+      if (parts.length > 1) {
+        url = `data:${mimeType};base64,${parts[1]}`;
+      }
+    }
+
     const a = document.createElement('a');
-    a.href = activeAudio.audioUrl;
+    a.href = url;
     const cleanSnippet = (activeAudio.text || 'speech').slice(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
-    a.download = `${cleanSnippet}_${Date.now()}.${downloadFormat}`;
+    a.download = `${cleanSnippet}_${Date.now()}.${targetFormat}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -163,17 +179,11 @@ export const AudioPlayer = () => {
           </div>
         </div>
 
-        {/* Format Selector + Download Button */}
+        {/* Chosen File Format Badge + Download Button */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <select
-            value={downloadFormat}
-            onChange={(e) => setDownloadFormat(e.target.value)}
-            className="text-xs px-2.5 py-2 rounded-xl border border-violet-500/30 bg-card text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
-          >
-            <option value="mp3">MP3</option>
-            <option value="wav">WAV</option>
-            <option value="ogg">OGG</option>
-          </select>
+          <span className="text-xs font-extrabold uppercase px-2.5 py-1.5 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/30">
+            {(activeAudio?.format || downloadFormat || 'MP3').toUpperCase()}
+          </span>
 
           <button
             type="button"
@@ -181,22 +191,41 @@ export const AudioPlayer = () => {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs shadow-md shadow-violet-600/30 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Download</span>
+            <span>Download .{(activeAudio?.format || downloadFormat || 'mp3').toUpperCase()}</span>
           </button>
         </div>
       </div>
 
-      {/* Waveform Bar Simulation */}
-      <div className="flex items-center justify-center gap-1 h-8 px-4 bg-muted/30 rounded-xl overflow-hidden">
+      {/* Dynamic Interactive Waveform Bar Visualizer */}
+      <div 
+        className="flex items-center justify-center gap-1 h-10 px-4 bg-slate-950/40 rounded-xl overflow-hidden cursor-pointer border border-violet-500/20 shadow-inner group"
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const targetRatio = Math.max(0, Math.min(1, clickX / rect.width));
+          const targetTime = targetRatio * (duration || 1);
+          if (audioRef.current) {
+            audioRef.current.currentTime = targetTime;
+            setCurrentTime(targetTime);
+          }
+        }}
+        title="Click anywhere on the waveform to seek"
+      >
         {Array.from({ length: 48 }).map((_, i) => {
-          const isActive = (currentTime / (duration || 1)) * 48 > i;
-          const height = Math.sin(i * 0.4) * 12 + 16;
+          const progressRatio = currentTime / (duration || 1);
+          const isActive = progressRatio * 48 > i;
+          // Dynamic real-time height modulation when playing vs static wave when paused
+          const dynamicMultiplier = isPlaying ? Math.abs(Math.sin(i * 0.35 + currentTime * 9)) * 14 + 8 : Math.sin(i * 0.4) * 8 + 14;
+          const height = Math.max(4, Math.min(28, dynamicMultiplier));
+
           return (
             <div
               key={i}
-              className={`w-1 rounded-full transition-all duration-150 ${
-                isActive ? 'bg-violet-500' : 'bg-muted-foreground/30'
-              } ${isPlaying && isActive ? 'animate-pulse' : ''}`}
+              className={`w-1 rounded-full transition-all duration-100 ${
+                isActive 
+                  ? 'bg-gradient-to-t from-violet-600 via-indigo-500 to-purple-400 shadow-xs shadow-violet-500/50' 
+                  : 'bg-muted-foreground/25 group-hover:bg-muted-foreground/40'
+              }`}
               style={{ height: `${height}px` }}
             />
           );
