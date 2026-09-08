@@ -6,6 +6,7 @@ export const VoiceSelector = () => {
   const { voices, selectedVoice, setSelectedVoice } = useTtsContext();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedProvider, setSelectedProvider] = useState('all');
   const [selectedGender, setSelectedGender] = useState('all');
 
@@ -32,12 +33,27 @@ export const VoiceSelector = () => {
     }
   };
 
+  const LANGUAGES = [
+    { label: 'All Languages', value: 'all' },
+    { label: 'English', value: 'english' },
+    { label: 'Hindi', value: 'hindi' },
+    { label: 'Gujarati', value: 'gujarati' },
+    { label: 'Marathi', value: 'marathi' },
+    { label: 'Spanish', value: 'spanish' },
+    { label: 'French', value: 'french' },
+    { label: 'German', value: 'german' },
+  ];
+
   const filteredVoices = voices.filter((v) => {
     const matchesSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          v.provider.toLowerCase().includes(searchTerm.toLowerCase());
+                          v.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (v.language && v.language.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesProvider = selectedProvider === 'all' || v.provider.toLowerCase() === selectedProvider.toLowerCase();
     const matchesGender = selectedGender === 'all' || v.gender.toLowerCase() === selectedGender.toLowerCase();
-    return matchesSearch && matchesProvider && matchesGender;
+    const matchesLanguage = selectedLanguage === 'all' || 
+                            (v.language && v.language.toLowerCase() === selectedLanguage.toLowerCase()) ||
+                            (v.languageCode && v.languageCode.toLowerCase().includes(selectedLanguage.toLowerCase()));
+    return matchesSearch && matchesProvider && matchesGender && matchesLanguage;
   });
 
   const getProviderBadge = (provider) => {
@@ -93,28 +109,42 @@ export const VoiceSelector = () => {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-border bg-popover/95 backdrop-blur-xl shadow-2xl p-4 max-h-[420px] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-border bg-popover/95 backdrop-blur-xl shadow-2xl p-4 max-h-[460px] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150">
           
           {/* Search & Filters Bar */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <div className="flex flex-col gap-2">
+            {/* Row 1: Search Input */}
+            <div className="relative w-full">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground shrink-0 pointer-events-none" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by voice name or provider..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-border bg-muted/40 focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Search voices by name..."
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-muted/40 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Row 2: 3 Clean Equal-Width Select Dropdowns */}
+            <div className="grid grid-cols-3 gap-1.5 w-full">
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="w-full text-xs px-2 py-1.5 rounded-lg border border-border bg-muted/40 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer truncate"
+              >
+                {LANGUAGES.map((lang) => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+
               <select
                 value={selectedProvider}
                 onChange={(e) => setSelectedProvider(e.target.value)}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-muted/40 text-foreground focus:outline-none"
+                className="w-full text-xs px-2 py-1.5 rounded-lg border border-border bg-muted/40 text-foreground focus:outline-none cursor-pointer truncate"
               >
-                <option value="all">All Providers</option>
+                <option value="all">All Engines</option>
                 <option value="elevenlabs">ElevenLabs</option>
                 <option value="openai">OpenAI</option>
                 <option value="google">Google</option>
@@ -123,7 +153,7 @@ export const VoiceSelector = () => {
               <select
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-muted/40 text-foreground focus:outline-none"
+                className="w-full text-xs px-2 py-1.5 rounded-lg border border-border bg-muted/40 text-foreground focus:outline-none cursor-pointer truncate"
               >
                 <option value="all">All Genders</option>
                 <option value="female">Female</option>

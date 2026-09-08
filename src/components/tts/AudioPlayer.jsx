@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { formatTime } from '../../utils/formatters';
-import { Play, Pause, Download, Volume2, VolumeX, Sparkles, Music } from 'lucide-react';
+import { Play, Pause, Download, Volume2, VolumeX, Sparkles, Music, RotateCcw, RotateCw, Gauge } from 'lucide-react';
 
 export const AudioPlayer = () => {
   const { activeAudio, isPlaying, setIsPlaying } = useTtsContext();
@@ -9,8 +9,10 @@ export const AudioPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackError, setPlaybackError] = useState(null);
+  const [downloadFormat, setDownloadFormat] = useState('mp3');
 
   const audioRef = useRef(null);
 
@@ -27,6 +29,7 @@ export const AudioPlayer = () => {
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
     audio.volume = volume;
+    audio.playbackRate = playbackRate;
 
     audio.onloadedmetadata = () => {
       setDuration(audio.duration || activeAudio.durationSeconds || activeAudio.duration_seconds || 0);
@@ -86,6 +89,21 @@ export const AudioPlayer = () => {
     }
   };
 
+  const handleSkip = (seconds) => {
+    if (audioRef.current) {
+      const newTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + seconds));
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const handleSpeedChange = (rate) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  };
+
   const handleVolumeChange = (e) => {
     const val = parseFloat(e.target.value);
     setVolume(val);
@@ -106,7 +124,8 @@ export const AudioPlayer = () => {
     if (!activeAudio?.audioUrl) return;
     const a = document.createElement('a');
     a.href = activeAudio.audioUrl;
-    a.download = `neural_speech_${Date.now()}.mp3`;
+    const cleanSnippet = (activeAudio.text || 'speech').slice(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = `${cleanSnippet}_${Date.now()}.${downloadFormat}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -123,16 +142,19 @@ export const AudioPlayer = () => {
       )}
       
       {/* Audio Info Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-md shadow-violet-500/30">
+          <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-md shadow-violet-500/30 shrink-0">
             <Music className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h4 className="font-bold text-sm text-foreground">Generated Audio Output</h4>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30">
                 {activeAudio.voiceName || 'Neural Voice'}
+              </span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                {playbackRate}x Speed
               </span>
             </div>
             <p className="text-xs text-muted-foreground line-clamp-1 italic max-w-md mt-0.5">
@@ -141,14 +163,27 @@ export const AudioPlayer = () => {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs shadow-md shadow-violet-600/30 transition-all cursor-pointer"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download MP3</span>
-        </button>
+        {/* Format Selector + Download Button */}
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <select
+            value={downloadFormat}
+            onChange={(e) => setDownloadFormat(e.target.value)}
+            className="text-xs px-2.5 py-2 rounded-xl border border-violet-500/30 bg-card text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+          >
+            <option value="mp3">MP3</option>
+            <option value="wav">WAV</option>
+            <option value="ogg">OGG</option>
+          </select>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs shadow-md shadow-violet-600/30 transition-all cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download</span>
+          </button>
+        </div>
       </div>
 
       {/* Waveform Bar Simulation */}
@@ -169,19 +204,42 @@ export const AudioPlayer = () => {
       </div>
 
       {/* Playback Controls & Timeline Scrubber */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4">
         
-        {/* Play/Pause Button */}
-        <button
-          type="button"
-          onClick={togglePlay}
-          className="w-11 h-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-        >
-          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-        </button>
+        {/* Play / Pause / Skip Controls Group */}
+        <div className="flex items-center gap-2">
+          {/* Rewind 5s */}
+          <button
+            type="button"
+            onClick={() => handleSkip(-5)}
+            className="w-8 h-8 rounded-full bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-all text-xs font-bold"
+            title="Rewind 5 seconds"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Play/Pause Button */}
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="w-11 h-11 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+          </button>
+
+          {/* Forward 5s */}
+          <button
+            type="button"
+            onClick={() => handleSkip(5)}
+            className="w-8 h-8 rounded-full bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-all text-xs font-bold"
+            title="Forward 5 seconds"
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
         {/* Timeline Slider */}
-        <div className="flex-1 flex items-center gap-3">
+        <div className="flex-1 w-full flex items-center gap-3">
           <span className="text-xs font-mono text-muted-foreground min-w-[40px] text-right">
             {formatTime(currentTime)}
           </span>
@@ -199,20 +257,41 @@ export const AudioPlayer = () => {
           </span>
         </div>
 
-        {/* Volume Controls */}
-        <div className="hidden sm:flex items-center gap-2">
-          <button type="button" onClick={toggleMute} className="text-muted-foreground hover:text-foreground">
-            {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={isMuted ? 0 : volume}
-            onChange={handleVolumeChange}
-            className="w-20 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
-          />
+        {/* Playback Speed & Volume Controls */}
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          {/* Dynamic Speed Selector */}
+          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50">
+            <Gauge className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+            <select
+              value={playbackRate}
+              onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+              className="text-xs bg-transparent text-foreground font-bold focus:outline-none cursor-pointer pr-1"
+              title="Adjust playback speed in real-time"
+            >
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1">1.0x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2.0x</option>
+            </select>
+          </div>
+
+          {/* Volume Control */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button type="button" onClick={toggleMute} className="text-muted-foreground hover:text-foreground">
+              {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={isMuted ? 0 : volume}
+              onChange={handleVolumeChange}
+              className="w-16 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
+            />
+          </div>
         </div>
 
       </div>
