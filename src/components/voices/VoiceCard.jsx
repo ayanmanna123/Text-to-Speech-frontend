@@ -1,63 +1,87 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
-import { Play, Pause, Mic, Check } from 'lucide-react';
+import { getVoiceSampleText, playVoicePreview, stopVoicePreview } from '../../utils/voiceSamples';
+import { Play, Pause, Check, Volume2, Loader2 } from 'lucide-react';
+
 
 export const VoiceCard = ({ voice, onSelect }) => {
   const { selectedVoice } = useTtsContext();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
 
   const isSelected = selectedVoice?.id === voice.id;
+  const sampleText = getVoiceSampleText(voice);
+
+
+  useEffect(() => {
+    return () => {
+      stopVoicePreview();
+    };
+  }, []);
 
   const togglePreview = (e) => {
     e.stopPropagation();
-    if (!voice.previewUrl) return;
 
     if (isPlaying) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+      stopVoicePreview();
+      setIsPlaying(false);
+      setIsLoading(false);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      audioRef.current = new Audio(voice.previewUrl);
-      audioRef.current.play();
-      setIsPlaying(true);
-      audioRef.current.onended = () => setIsPlaying(false);
+      setIsLoading(true);
+      playVoicePreview(voice, {
+        onStart: () => {
+          setIsLoading(true);
+        },
+        onEnd: () => {
+          setIsLoading(false);
+          setIsPlaying(false);
+        },
+        onError: () => {
+          setIsLoading(false);
+          setIsPlaying(false);
+        },
+      }).then(() => {
+        setIsLoading(false);
+        setIsPlaying(true);
+      }).catch(() => {
+        setIsLoading(false);
+        setIsPlaying(false);
+      });
     }
   };
+
 
   const getProviderBadge = (provider) => {
     switch (provider?.toLowerCase()) {
       case 'elevenlabs':
-        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">ElevenLabs</span>;
+        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">ElevenLabs</span>;
       case 'openai':
-        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">OpenAI</span>;
+        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">OpenAI</span>;
       case 'google':
-        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">Google</span>;
+        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Google</span>;
       default:
-        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Neural</span>;
+        return <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Neural</span>;
     }
   };
 
   return (
     <div
       onClick={() => onSelect(voice)}
-      className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-4 cursor-pointer shadow-xs ${
+      className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-4 cursor-pointer shadow-2xs group ${
         isSelected
-          ? 'bg-primary/10 border-primary shadow-md'
-          : 'bg-card hover:bg-muted/40 border-border hover:border-border/80 hover:shadow-md'
+          ? 'bg-violet-50/80 border-violet-400 shadow-md ring-1 ring-violet-400/50'
+          : 'bg-white hover:bg-slate-50/80 border-slate-200/80 hover:border-violet-300 hover:shadow-md'
       }`}
     >
+      {/* Header Info Row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-500/20 to-purple-500/20 border border-violet-500/30 text-violet-500 flex items-center justify-center font-bold text-base">
+          <div className="w-10 h-10 rounded-xl bg-[#ede9fe] text-[#7c3aed] border border-[#ddd6fe] flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
             {voice.name.charAt(0)}
           </div>
           <div>
-            <h4 className="font-bold text-sm text-foreground">{voice.name}</h4>
+            <h4 className="font-extrabold text-sm text-slate-900">{voice.name.split('-')[0].trim()}</h4>
             <div className="flex items-center gap-2 mt-0.5">
               {getProviderBadge(voice.provider)}
             </div>
@@ -65,32 +89,47 @@ export const VoiceCard = ({ voice, onSelect }) => {
         </div>
 
         {isSelected && (
-          <span className="p-1 rounded-full bg-primary text-primary-foreground">
+          <span className="p-1 rounded-full bg-violet-600 text-white shadow-xs">
             <Check className="w-3.5 h-3.5" />
           </span>
         )}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
-        <div className="flex items-center gap-2 capitalize">
-          <span className="px-2 py-0.5 rounded-md bg-muted font-medium">{voice.gender}</span>
+      {/* Voice Sample Quote Preview */}
+      <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 text-xs text-slate-600 italic line-clamp-2 leading-relaxed">
+        "{sampleText}"
+      </div>
+
+      {/* Footer Traits & Play Sample Button */}
+      <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-1.5 capitalize text-[11px] font-medium text-slate-500">
+          <span className="px-2 py-0.5 rounded-md bg-slate-100 font-semibold text-slate-700">{voice.gender}</span>
           <span>&bull;</span>
           <span>{voice.accent}</span>
-          <span>&bull;</span>
-          <span>{voice.category || 'Neural'}</span>
         </div>
 
-        {voice.previewUrl && (
-          <button
-            type="button"
-            onClick={togglePreview}
-            className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-all cursor-pointer"
-            title="Preview Audio Sample"
-          >
-            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-          </button>
-        )}
+        {/* Dedicated Play Preview Button */}
+        <button
+          type="button"
+          onClick={togglePreview}
+          className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+            isPlaying
+              ? 'bg-violet-600 text-white shadow-md shadow-violet-500/25 ring-2 ring-violet-400/50'
+              : 'bg-violet-100 hover:bg-violet-200 text-violet-700 border border-violet-200'
+          }`}
+          title={`Play sample preview for ${voice.name}`}
+        >
+          {isLoading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : isPlaying ? (
+            <Pause className="w-3.5 h-3.5" />
+          ) : (
+            <Play className="w-3.5 h-3.5 ml-0.5 fill-current" />
+          )}
+          <span>{isPlaying ? 'Pause' : 'Sample'}</span>
+        </button>
       </div>
     </div>
   );
 };
+

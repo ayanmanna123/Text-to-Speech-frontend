@@ -12,7 +12,7 @@ export const apiClient = async (endpoint, options = {}) => {
   };
 
   if (body) {
-    config.body = JSON.stringify(body);
+    config.body = typeof body === 'string' ? body : JSON.stringify(body);
   } else {
     delete config.body;
   }

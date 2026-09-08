@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
+import { playVoicePreview, stopVoicePreview } from '../../utils/voiceSamples';
 import { ChevronDown, Play, Pause, Search, Check, Mic, SlidersHorizontal } from 'lucide-react';
 
 export const VoiceSelector = () => {
@@ -11,27 +12,23 @@ export const VoiceSelector = () => {
   const [selectedGender, setSelectedGender] = useState('all');
 
   const [playingPreviewId, setPlayingPreviewId] = useState(null);
-  const audioRef = useRef(null);
 
   const togglePreview = (e, voice) => {
     e.stopPropagation();
-    if (!voice.previewUrl) return;
 
     if (playingPreviewId === voice.id) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setPlayingPreviewId(null);
-      }
+      stopVoicePreview();
+      setPlayingPreviewId(null);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      audioRef.current = new Audio(voice.previewUrl);
-      audioRef.current.play();
       setPlayingPreviewId(voice.id);
-      audioRef.current.onended = () => setPlayingPreviewId(null);
+      playVoicePreview(voice, {
+        onEnd: () => setPlayingPreviewId(null),
+        onError: () => setPlayingPreviewId(null),
+      }).catch(() => setPlayingPreviewId(null));
     }
   };
+
+
 
   const LANGUAGES = [
     { label: 'All Languages', value: 'all' },
@@ -208,18 +205,17 @@ export const VoiceSelector = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {voice.previewUrl && (
-                        <button
-                          type="button"
-                          onClick={(e) => togglePreview(e, voice)}
-                          className="w-7 h-7 rounded-full bg-violet-100 hover:bg-violet-200 text-violet-700 flex items-center justify-center transition-all"
-                          title="Preview voice sample"
-                        >
-                          {isPreviewPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => togglePreview(e, voice)}
+                        className="w-7 h-7 rounded-full bg-violet-100 hover:bg-violet-200 text-violet-700 flex items-center justify-center transition-all cursor-pointer"
+                        title={`Preview sample for ${voice.name}`}
+                      >
+                        {isPreviewPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5 fill-current" />}
+                      </button>
                       {isSelected && <Check className="w-4 h-4 text-violet-600" />}
                     </div>
+
                   </div>
                 );
               })
