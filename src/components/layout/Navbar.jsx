@@ -4,9 +4,10 @@ import { formatNumber } from '../../utils/formatters';
 import { Sparkles, Mic, History, Zap, SlidersHorizontal } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab }) => {
-  const { quota } = useTtsContext();
+  const { quota, isGenerating } = useTtsContext();
 
   const remainingRatio = Math.max(0, Math.min(100, (quota.charactersRemaining / quota.characterQuota) * 100));
+  const isLowQuota = remainingRatio < 15;
 
   return (
     <header className="w-full bg-transparent pt-3 pb-1 px-2 sm:px-4">
@@ -21,9 +22,6 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-lg text-slate-900 tracking-tight">
                 NeuralVoice
-              </span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60">
-                Studio
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-medium hidden sm:block">AI Text-to-Speech Platform</p>
@@ -75,30 +73,32 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
         {/* Right Action & Status Bar */}
         <div className="flex items-center gap-3">
           
-          {/* Character Credit Quota Indicator */}
-          <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/30 backdrop-blur-md border border-[#d0f0ec] text-xs shadow-2xs">
-            <Zap className="w-3.5 h-3.5 text-[#85D1DB] fill-[#85D1DB]" />
+          {/* Dynamic Character Credit Quota Indicator */}
+          <div 
+            className={`hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/40 backdrop-blur-md border border-[#d0f0ec] text-xs shadow-2xs transition-all duration-300 ${
+              isGenerating ? 'ring-2 ring-[#85D1DB]/50 animate-pulse' : ''
+            }`}
+            title={`Tier: ${(quota.tier || 'free').toUpperCase()} | Used: ${formatNumber(quota.charactersUsed)} chars | Remaining: ${formatNumber(quota.charactersRemaining)} chars`}
+          >
+            <Zap className={`w-3.5 h-3.5 ${isLowQuota ? 'text-amber-500 fill-amber-500' : 'text-[#85D1DB] fill-[#85D1DB]'}`} />
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-800">
                 {formatNumber(quota.charactersRemaining)} <span className="text-slate-400 font-normal">/ {formatNumber(quota.characterQuota)} chars</span>
               </span>
-              <div className="w-16 h-1.5 bg-[#d0f0ec]/70 rounded-full overflow-hidden">
+              <div className="w-16 h-1.5 bg-[#d0f0ec]/80 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#85D1DB] to-[#B6F2D1] rounded-full transition-all duration-500"
+                  className={`h-full rounded-full transition-all duration-500 ease-out ${
+                    isLowQuota 
+                      ? 'bg-gradient-to-r from-amber-400 to-rose-400' 
+                      : 'bg-gradient-to-r from-[#85D1DB] to-[#B6F2D1]'
+                  }`}
                   style={{ width: `${remainingRatio}%` }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Engine Active Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9FDF2] text-[#084951] border border-[#85D1DB]/60 text-xs font-semibold">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#85D1DB] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1294a8]"></span>
-            </span>
-            <span className="hidden sm:inline">ElevenLabs Active</span>
-          </div>
+
 
           {/* User Avatar Circle */}
           <div className="w-9 h-9 rounded-full bg-[#C9FDF2] text-[#084951] font-bold text-sm flex items-center justify-center border border-[#85D1DB]/60 shadow-2xs">

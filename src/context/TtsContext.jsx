@@ -38,18 +38,26 @@ export const TtsProvider = ({ children }) => {
     }
   };
 
+  const calculateQuotaFromHistory = (items, totalQuota = 10000) => {
+    const used = (items || []).reduce(
+      (sum, item) => sum + (item.character_count || item.characterCount || item.text_content?.length || item.text?.length || 0),
+      0
+    );
+    return {
+      tier: 'free',
+      characterQuota: totalQuota,
+      charactersUsed: used,
+      charactersRemaining: Math.max(0, totalQuota - used),
+    };
+  };
+
   const [history, setHistory] = useState(() => getLocalHistory());
   const [activeAudio, setActiveAudio] = useState(() => {
     const initialHist = getLocalHistory();
     return initialHist.length > 0 ? initialHist[0] : null;
   });
   const [isPlaying, setIsPlaying] = useState(false);
-  const [quota, setQuota] = useState({
-    tier: 'free',
-    characterQuota: 10000,
-    charactersUsed: 0,
-    charactersRemaining: 10000,
-  });
+  const [quota, setQuota] = useState(() => calculateQuotaFromHistory(getLocalHistory()));
   const [error, setError] = useState(null);
 
   // Initial Data Fetch
@@ -79,10 +87,20 @@ export const TtsProvider = ({ children }) => {
     try {
       const res = await usageApi.getUserBalance();
       if (res.success && res.data) {
-        setQuota(res.data);
+        setQuota((prev) => {
+          const backendData = res.data;
+          const used = Math.max(prev.charactersUsed || 0, backendData.charactersUsed || 0);
+          const total = backendData.characterQuota || prev.characterQuota || 10000;
+          return {
+            ...backendData,
+            characterQuota: total,
+            charactersUsed: used,
+            charactersRemaining: Math.max(0, total - used),
+          };
+        });
       }
     } catch (err) {
-      console.warn('Using default quota:', err.message);
+      console.warn('Using local calculated quota:', err.message);
     }
   };
 
