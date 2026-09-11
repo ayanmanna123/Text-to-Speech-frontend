@@ -164,10 +164,10 @@ export const AudioPlayer = () => {
   const demoText = activeAudio.text || 'सपनों की आवाज़, अब हर शब्द में, आपके विचारों को मिलेगी एक नई ऊँचाई!';
 
   return (
-    <div className="bg-[#f5f3ff]/60 border border-violet-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative animate-in fade-in slide-in-from-bottom-3 duration-300">
+    <div className="bg-white/30 backdrop-blur-md border border-[#d0f0ec] rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative animate-in fade-in slide-in-from-bottom-3 duration-300">
       
       {playbackError && (
-        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
+        <div className="p-3 rounded-xl bg-rose-50/80 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
           <span>{playbackError}</span>
           <button type="button" onClick={() => setPlaybackError(null)} className="font-bold underline ml-2">Dismiss</button>
         </div>
@@ -176,16 +176,16 @@ export const AudioPlayer = () => {
       {/* Audio Output Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
-            <Music className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#85D1DB] via-[#B3EBF2] to-[#B6F2D1] text-[#062c30] flex items-center justify-center shadow-md shadow-[#85D1DB]/20 shrink-0">
+            <Music className="w-5 h-5 text-[#062c30]" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h4 className="font-extrabold text-sm text-slate-900">Generated Audio Output</h4>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#ede9fe] text-[#7c3aed] border border-[#ddd6fe]">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60">
                 {activeAudio.voiceName || 'Neural Voice'}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/40 text-slate-600 border border-[#d0f0ec] backdrop-blur-xs">
                 {playbackRate}x Speed
               </span>
             </div>
@@ -197,14 +197,14 @@ export const AudioPlayer = () => {
 
         {/* Format Tag & Download CTA Button */}
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-          <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-purple-100 text-purple-700 border border-purple-200 uppercase">
+          <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60 uppercase">
             {formatExt}
           </span>
 
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-violet-500/25 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#85D1DB] via-[#66c2ce] to-[#B6F2D1] hover:from-[#72c7d2] hover:to-[#9eecc1] text-[#05262c] font-extrabold text-xs shadow-md shadow-[#85D1DB]/30 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Download .{formatExt}</span>
@@ -214,7 +214,7 @@ export const AudioPlayer = () => {
 
       {/* Dynamic Waveform Visualizer */}
       <div 
-        className="flex items-center justify-center gap-1 h-14 px-4 bg-white rounded-xl overflow-hidden cursor-pointer border border-violet-100 shadow-2xs group transition-all"
+        className="flex items-center justify-center gap-1 h-14 px-4 bg-white/30 backdrop-blur-xs rounded-xl overflow-hidden cursor-pointer border border-[#d0f0ec] shadow-2xs group transition-all"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
@@ -240,8 +240,8 @@ export const AudioPlayer = () => {
               key={i}
               className={`w-1 rounded-full transition-all duration-100 ${
                 isActive 
-                  ? 'bg-gradient-to-t from-violet-600 via-indigo-600 to-purple-400 shadow-2xs' 
-                  : 'bg-slate-200 group-hover:bg-slate-300'
+                  ? 'bg-gradient-to-t from-[#85D1DB] via-[#B3EBF2] to-[#B6F2D1] shadow-2xs' 
+                  : 'bg-slate-300/60 group-hover:bg-slate-400/60'
               }`}
               style={{ height: `${height}px` }}
             />
@@ -258,7 +258,7 @@ export const AudioPlayer = () => {
           <button
             type="button"
             onClick={() => handleSkip(-10)}
-            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 border border-[#d0f0ec] text-slate-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
             title="Rewind 10 seconds"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -268,16 +268,16 @@ export const AudioPlayer = () => {
           <button
             type="button"
             onClick={togglePlay}
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-md shadow-violet-500/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#85D1DB] via-[#66c2ce] to-[#B6F2D1] text-[#05262c] flex items-center justify-center shadow-md shadow-[#85D1DB]/35 transition-transform hover:scale-105 active:scale-95 cursor-pointer font-bold"
           >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5 fill-current" />}
           </button>
 
           {/* Forward 10s */}
           <button
             type="button"
             onClick={() => handleSkip(10)}
-            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 border border-[#d0f0ec] text-slate-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
             title="Forward 10 seconds"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -296,7 +296,7 @@ export const AudioPlayer = () => {
             step="0.1"
             value={currentTime}
             onChange={handleSeek}
-            className="flex-1 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="flex-1 h-1.5 bg-[#d0f0ec]/60 rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
           />
           <span className="text-xs font-mono font-medium text-slate-500 min-w-[36px]">
             {formatTime(duration || 5)}
@@ -310,7 +310,7 @@ export const AudioPlayer = () => {
             <select
               value={playbackRate}
               onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-              className="text-xs font-extrabold bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer appearance-none pr-6 shadow-2xs"
+              className="text-xs font-extrabold bg-white/30 border border-[#d0f0ec] text-slate-800 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#85D1DB] cursor-pointer appearance-none pr-6 shadow-2xs backdrop-blur-xs"
             >
               <option value="0.5">0.5x</option>
               <option value="0.75">0.75x</option>
@@ -334,7 +334,7 @@ export const AudioPlayer = () => {
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+              className="w-16 h-1.5 bg-[#d0f0ec] rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
             />
           </div>
         </div>

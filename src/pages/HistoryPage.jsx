@@ -9,7 +9,7 @@ export const HistoryPage = () => {
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+          <span className="p-2 rounded-xl bg-[#C9FDF2] text-[#084951] border border-[#85D1DB]/60">
             <History className="w-5 h-5" />
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">

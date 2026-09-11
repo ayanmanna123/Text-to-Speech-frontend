@@ -15,18 +15,18 @@ export const VoiceSettings = () => {
   };
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-4">
+    <div className="bg-white/30 backdrop-blur-md border border-[#d0f0ec] rounded-2xl p-5 shadow-xs flex flex-col gap-4">
       {/* Fine-Tuning Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-violet-600" />
+          <Sliders className="w-4 h-4 text-[#1294a8]" />
           <span className="font-extrabold text-sm text-slate-900">Voice Fine-Tuning</span>
         </div>
         
         <button
           type="button"
           onClick={handleReset}
-          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 border border-slate-200 rounded-xl px-2.5 py-1 bg-white hover:bg-slate-50 shadow-2xs font-semibold transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 border border-[#d0f0ec] rounded-xl px-2.5 py-1 bg-white/30 hover:bg-white/50 shadow-2xs font-semibold transition-all cursor-pointer backdrop-blur-xs"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset</span>
@@ -37,7 +37,7 @@ export const VoiceSettings = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         
         {/* Stability Slider */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-[#fafbfc] border border-slate-200/80">
+        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white/20 backdrop-blur-xs border border-[#d0f0ec]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800">Stability</span>
             <span className="font-semibold text-slate-500">{Math.round(voiceSettings.stability * 100)}%</span>
@@ -49,7 +49,7 @@ export const VoiceSettings = () => {
             step="0.05"
             value={voiceSettings.stability}
             onChange={(e) => updateSetting('stability', parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="w-full h-1.5 bg-[#d0f0ec]/60 rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
           />
           <div className="flex justify-between text-[10px] font-medium text-slate-400">
             <span>Expressive</span>
@@ -58,7 +58,7 @@ export const VoiceSettings = () => {
         </div>
 
         {/* Clarity / Similarity Boost Slider */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-[#fafbfc] border border-slate-200/80">
+        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white/20 backdrop-blur-xs border border-[#d0f0ec]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800">Clarity / Similarity</span>
             <span className="font-semibold text-slate-500">{Math.round(voiceSettings.similarity_boost * 100)}%</span>
@@ -70,7 +70,7 @@ export const VoiceSettings = () => {
             step="0.05"
             value={voiceSettings.similarity_boost}
             onChange={(e) => updateSetting('similarity_boost', parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="w-full h-1.5 bg-[#d0f0ec]/60 rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
           />
           <div className="flex justify-between text-[10px] font-medium text-slate-400">
             <span>Natural</span>
@@ -79,7 +79,7 @@ export const VoiceSettings = () => {
         </div>
 
         {/* Speed Slider */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-[#fafbfc] border border-slate-200/80">
+        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white/20 backdrop-blur-xs border border-[#d0f0ec]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800">Speaking Speed</span>
             <span className="font-semibold text-slate-500">{voiceSettings.speed}x</span>
@@ -91,7 +91,7 @@ export const VoiceSettings = () => {
             step="0.1"
             value={voiceSettings.speed}
             onChange={(e) => updateSetting('speed', parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="w-full h-1.5 bg-[#d0f0ec]/60 rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
           />
           <div className="flex justify-between text-[10px] font-medium text-slate-400">
             <span>0.5x Slow</span>
@@ -100,7 +100,7 @@ export const VoiceSettings = () => {
         </div>
 
         {/* Output Format Toggle Buttons */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-[#fafbfc] border border-slate-200/80 justify-between">
+        <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white/20 backdrop-blur-xs border border-[#d0f0ec] justify-between">
           <span className="font-bold text-xs text-slate-800">Output Format</span>
           <div className="grid grid-cols-3 gap-1.5 mt-0.5">
             <button
@@ -108,8 +108,8 @@ export const VoiceSettings = () => {
               onClick={() => updateSetting('format', 'mp3')}
               className={`py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 voiceSettings.format === 'mp3'
-                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs'
-                  : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                  ? 'bg-gradient-to-r from-[#85D1DB] to-[#B6F2D1] text-[#05262c] shadow-xs'
+                  : 'bg-white/30 hover:bg-white/50 text-slate-600 border border-[#d0f0ec]'
               }`}
             >
               MP3
@@ -119,8 +119,8 @@ export const VoiceSettings = () => {
               onClick={() => updateSetting('format', 'wav')}
               className={`py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 voiceSettings.format === 'wav'
-                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs'
-                  : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                  ? 'bg-gradient-to-r from-[#85D1DB] to-[#B6F2D1] text-[#05262c] shadow-xs'
+                  : 'bg-white/30 hover:bg-white/50 text-slate-600 border border-[#d0f0ec]'
               }`}
             >
               WAV
@@ -130,8 +130,8 @@ export const VoiceSettings = () => {
               onClick={() => updateSetting('format', 'ogg')}
               className={`py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 voiceSettings.format === 'ogg'
-                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs'
-                  : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                  ? 'bg-gradient-to-r from-[#85D1DB] to-[#B6F2D1] text-[#05262c] shadow-xs'
+                  : 'bg-white/30 hover:bg-white/50 text-slate-600 border border-[#d0f0ec]'
               }`}
             >
               OGG

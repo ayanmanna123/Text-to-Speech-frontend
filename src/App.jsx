@@ -10,7 +10,7 @@ export function AppContent() {
   const [activeTab, setActiveTab] = useState('studio');
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-violet-500/20 selection:text-violet-500">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-[#85D1DB]/40 selection:text-[#093d43]">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="flex-1">
