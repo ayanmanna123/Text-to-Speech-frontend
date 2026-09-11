@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { playVoicePreview, stopVoicePreview } from '../../utils/voiceSamples';
+import { VoiceAvatar } from '../../utils/avatarUtils';
 import { ChevronDown, Play, Pause, Search, Check, Mic, SlidersHorizontal } from 'lucide-react';
 
 export const VoiceSelector = () => {
@@ -107,9 +108,7 @@ export const VoiceSelector = () => {
       >
         {selectedVoice ? (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C9FDF2]/80 border border-[#85D1DB]/60 flex items-center justify-center text-[#084951] font-extrabold text-base shrink-0 shadow-2xs">
-              {selectedVoice.name.charAt(0)}
-            </div>
+            <VoiceAvatar voice={selectedVoice} className="w-10 h-10 rounded-xl" />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-slate-900 text-sm">{selectedVoice.name.split('-')[0].trim()}</span>
@@ -211,9 +210,7 @@ export const VoiceSelector = () => {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#C9FDF2] text-[#084951] flex items-center justify-center font-bold text-xs shrink-0 border border-[#85D1DB]/50">
-                          {voice.name.charAt(0)}
-                        </div>
+                        <VoiceAvatar voice={voice} className="w-8 h-8 rounded-lg" />
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-800 text-xs">{voice.name.split('-')[0].trim()}</span>

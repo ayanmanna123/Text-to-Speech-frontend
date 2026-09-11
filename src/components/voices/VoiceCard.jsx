@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { getVoiceSampleText, playVoicePreview, stopVoicePreview } from '../../utils/voiceSamples';
+import { VoiceAvatar } from '../../utils/avatarUtils';
 import { Play, Pause, Check, Volume2, Loader2 } from 'lucide-react';
 
 
@@ -77,9 +78,7 @@ export const VoiceCard = ({ voice, onSelect }) => {
       {/* Header Info Row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60 flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
-            {voice.name.charAt(0)}
-          </div>
+          <VoiceAvatar voice={voice} className="w-10 h-10 rounded-xl" />
           <div>
             <h4 className="font-extrabold text-sm text-slate-900">{voice.name.split('-')[0].trim()}</h4>
             <div className="flex items-center gap-2 mt-0.5">

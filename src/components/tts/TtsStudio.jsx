@@ -5,10 +5,10 @@ import { VoiceSelector } from './VoiceSelector';
 import { VoiceSettings } from './VoiceSettings';
 import { AudioPlayer } from './AudioPlayer';
 import { HistoryList } from './HistoryList';
-import { Loader2, Zap, AlertCircle } from 'lucide-react';
+import { Loader2, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const TtsStudio = () => {
-  const { text, selectedVoice, isGenerating, generateSpeech, error, setError } = useTtsContext();
+  const { text, selectedVoice, isGenerating, generateSpeech, error, setError, infoMessage, setInfoMessage } = useTtsContext();
 
   const textLength = text.trim().length;
   const isOverLimit = text.length > 5000;
@@ -37,6 +37,19 @@ export const TtsStudio = () => {
 
   return (
     <div className="max-w-[1550px] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 flex flex-col gap-6">
+
+      {/* Info Notice Banner */}
+      {infoMessage && (
+        <div className="p-4 rounded-2xl bg-[#E6F9F5] border border-[#85D1DB]/70 text-[#084951] text-sm flex items-center justify-between shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 font-medium">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1294a8]" />
+            <span>{infoMessage}</span>
+          </div>
+          <button type="button" onClick={() => setInfoMessage(null)} className="font-bold underline text-xs cursor-pointer ml-4 shrink-0 hover:text-[#062c30]">
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Error Alert Box */}
       {error && (

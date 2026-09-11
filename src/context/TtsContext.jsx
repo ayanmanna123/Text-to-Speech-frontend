@@ -59,6 +59,7 @@ export const TtsProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [quota, setQuota] = useState(() => calculateQuotaFromHistory(getLocalHistory()));
   const [error, setError] = useState(null);
+  const [infoMessage, setInfoMessage] = useState(null);
 
   // Initial Data Fetch
   useEffect(() => {
@@ -164,9 +165,28 @@ export const TtsProvider = ({ children }) => {
       return;
     }
 
+    // 4. Check if exact audio generation for this text & voice already exists in history
+    const existingLocalMatch = history.find((item) => {
+      const itemText = (item.text || item.text_content || '').trim();
+      const matchText = itemText.toLowerCase() === cleanText.toLowerCase();
+      const itemVoiceId = item.voiceId || item.voice_id;
+      const itemVoiceName = item.voiceName || item.voice_name;
+      const matchVoice = itemVoiceId === selectedVoice.id || itemVoiceName === selectedVoice.name;
+      const matchFormat = !voiceSettings.format || (item.format || 'mp3') === voiceSettings.format;
+      return matchText && matchVoice && matchFormat;
+    });
+
+    if (existingLocalMatch) {
+      setActiveAudio(existingLocalMatch);
+      setIsPlaying(true);
+      setError(null);
+      setInfoMessage(`Loaded existing audio generation for this text! (0 credits used)`);
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
-
+    setInfoMessage(null);
 
     try {
       const res = await ttsApi.generateSpeech({
@@ -184,6 +204,7 @@ export const TtsProvider = ({ children }) => {
       });
 
       if (res.success && res.data) {
+        const isCached = res.data.isCached;
         const newAudio = {
           id: res.data.generationId || `gen_${Date.now()}`,
           audio_url: res.data.audioUrl,
@@ -198,7 +219,7 @@ export const TtsProvider = ({ children }) => {
           text_content: textToSynthesize,
           text: textToSynthesize,
           format: voiceSettings.format || res.data.format || 'mp3',
-          created_at: new Date().toISOString(),
+          created_at: res.data.createdAt || new Date().toISOString(),
         };
         setActiveAudio(newAudio);
         setHistory((prev) => {
@@ -206,12 +227,17 @@ export const TtsProvider = ({ children }) => {
           saveLocalHistory(updated);
           return updated;
         });
-        setQuota((prev) => ({
-          ...prev,
-          charactersUsed: prev.charactersUsed + textToSynthesize.length,
-          charactersRemaining: Math.max(0, prev.charactersRemaining - textToSynthesize.length),
-        }));
-        fetchUsage(); // Refresh quota balance
+
+        if (isCached) {
+          setInfoMessage(`Loaded existing cached audio generation for this text! (0 credits used)`);
+        } else {
+          setQuota((prev) => ({
+            ...prev,
+            charactersUsed: (prev.charactersUsed || 0) + textToSynthesize.length,
+            charactersRemaining: Math.max(0, (prev.charactersRemaining || 10000) - textToSynthesize.length),
+          }));
+          fetchUsage(); // Refresh quota balance
+        }
         fetchHistory(); // Sync backend history
       }
     } catch (err) {
@@ -240,6 +266,8 @@ export const TtsProvider = ({ children }) => {
         quota,
         error,
         setError,
+        infoMessage,
+        setInfoMessage,
         generateSpeech,
         fetchVoices,
         fetchUsage,

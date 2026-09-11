@@ -1,10 +1,11 @@
 import React from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { formatDate } from '../../utils/formatters';
+import { VoiceAvatar } from '../../utils/avatarUtils';
 import { History, Play, Pause, Music } from 'lucide-react';
 
 export const HistoryList = () => {
-  const { history, activeAudio, setActiveAudio, isPlaying, setIsPlaying, setText } = useTtsContext();
+  const { history, activeAudio, setActiveAudio, isPlaying, setIsPlaying, setText, voices } = useTtsContext();
 
   if (!history || history.length === 0) {
     return (
@@ -33,6 +34,8 @@ export const HistoryList = () => {
           const itemUrl = item.audio_url || item.audioUrl;
           const isActive = activeAudio && (activeAudio.id === item.id || activeAudio.audioUrl === itemUrl || activeAudio.audio_url === itemUrl);
           const isCurrentPlaying = isActive && isPlaying;
+          const voiceName = item.voice_name || item.voice_id;
+          const matchedVoice = voices?.find((v) => v.name === voiceName || v.id === item.voice_id) || { name: voiceName, gender: item.gender || 'neutral' };
 
           const handlePlayToggle = () => {
             if (isActive) {
@@ -44,13 +47,12 @@ export const HistoryList = () => {
                 audio_url: itemUrl,
                 durationSeconds: item.duration_seconds || item.durationSeconds,
                 characterCount: item.character_count || item.characterCount,
-                voiceName: item.voice_name || item.voice_id,
+                voiceName: voiceName,
                 text: item.text_content || item.text,
               });
               setIsPlaying(true);
             }
           };
-
 
           return (
             <div
@@ -62,15 +64,7 @@ export const HistoryList = () => {
               }`}
             >
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 transition-colors ${
-                    isCurrentPlaying
-                      ? 'bg-gradient-to-tr from-[#85D1DB] to-[#B6F2D1] text-[#05262c] animate-pulse shadow-xs'
-                      : 'bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/50'
-                  }`}
-                >
-                  <Music className="w-4 h-4 text-[#084951]" />
-                </div>
+                <VoiceAvatar voice={matchedVoice} className={`w-9 h-9 rounded-xl ${isCurrentPlaying ? 'ring-2 ring-[#1294a8] animate-pulse' : ''}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-extrabold text-xs text-slate-900">

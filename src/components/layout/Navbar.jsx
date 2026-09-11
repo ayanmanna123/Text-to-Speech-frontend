@@ -1,13 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTtsContext } from '../../context/TtsContext';
 import { formatNumber } from '../../utils/formatters';
-import { Sparkles, Mic, History, Zap, SlidersHorizontal } from 'lucide-react';
+import { Sparkles, Mic, History, Zap, SlidersHorizontal, RefreshCw } from 'lucide-react';
+
+const AVATAR_STYLES = ['avataaars', 'bottts', 'micah', 'lorelei', 'fun-emoji', 'thumbs'];
 
 export const Navbar = ({ activeTab, setActiveTab }) => {
   const { quota, isGenerating } = useTtsContext();
 
+  const [avatarSeed, setAvatarSeed] = useState(() => {
+    return localStorage.getItem('user_avatar_seed') || `user_${Math.floor(Math.random() * 10000)}`;
+  });
+  const [avatarStyle, setAvatarStyle] = useState(() => {
+    return localStorage.getItem('user_avatar_style') || 'avataaars';
+  });
+  const [isRotating, setIsRotating] = useState(false);
+
   const remainingRatio = Math.max(0, Math.min(100, (quota.charactersRemaining / quota.characterQuota) * 100));
   const isLowQuota = remainingRatio < 15;
+
+  const handleRandomizeAvatar = () => {
+    setIsRotating(true);
+    const newSeed = `user_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const randomStyle = AVATAR_STYLES[Math.floor(Math.random() * AVATAR_STYLES.length)];
+    
+    setAvatarSeed(newSeed);
+    setAvatarStyle(randomStyle);
+    localStorage.setItem('user_avatar_seed', newSeed);
+    localStorage.setItem('user_avatar_style', randomStyle);
+
+    setTimeout(() => {
+      setIsRotating(false);
+    }, 500);
+  };
+
+  const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${avatarSeed}&backgroundColor=c9fdf2,b3ebf2`;
 
   return (
     <header className="w-full bg-transparent pt-3 pb-1 px-2 sm:px-4">
@@ -98,12 +125,30 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
             </div>
           </div>
 
-
-
-          {/* User Avatar Circle */}
-          <div className="w-9 h-9 rounded-full bg-[#C9FDF2] text-[#084951] font-bold text-sm flex items-center justify-center border border-[#85D1DB]/60 shadow-2xs">
-            A
-          </div>
+          {/* Interactive Random Avatar Circle */}
+          <button
+            type="button"
+            onClick={handleRandomizeAvatar}
+            className="group relative w-10 h-10 rounded-full bg-[#C9FDF2] border-2 border-[#85D1DB]/80 shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 focus:outline-none"
+            title="Click to generate a new avatar"
+          >
+            <img
+              src={avatarUrl}
+              alt="User Avatar"
+              className={`w-full h-full object-cover transition-transform duration-500 ${
+                isRotating ? 'rotate-[360deg] scale-90' : 'group-hover:scale-110'
+              }`}
+              onError={(e) => {
+                // Fallback icon if SVG fails to load
+                e.target.style.display = 'none';
+              }}
+            />
+            
+            {/* Hover overlay indicator */}
+            <div className="absolute inset-0 bg-[#0c3941]/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+              <RefreshCw className={`w-4 h-4 text-white ${isRotating ? 'animate-spin' : ''}`} />
+            </div>
+          </button>
 
         </div>
 
