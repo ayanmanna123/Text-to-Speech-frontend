@@ -42,8 +42,8 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
         
         {/* Brand Logo & Tagline */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('studio')}>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#85D1DB] via-[#B3EBF2] to-[#B6F2D1] flex items-center justify-center text-[#062c30] shadow-md shadow-[#85D1DB]/30 font-bold">
-            <Mic className="w-5 h-5 text-[#062c30]" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/60 border border-[#85D1DB]/50 flex items-center justify-center shadow-md shadow-[#85D1DB]/25 p-0.5">
+            <img src="/logo.svg" alt="NeuralVoice Logo" className="w-full h-full object-contain rounded-lg" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">

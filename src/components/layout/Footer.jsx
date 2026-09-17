@@ -7,8 +7,8 @@ export const Footer = () => {
       <div className="max-w-[1550px] mx-auto px-3 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
 
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#85D1DB] to-[#B6F2D1] text-[#062c30] flex items-center justify-center font-bold text-xs shadow-xs">
-            <Mic className="w-3.5 h-3.5 text-[#062c30]" />
+          <div className="w-6 h-6 rounded-md overflow-hidden bg-white/60 border border-[#85D1DB]/50 flex items-center justify-center p-0.5 shadow-2xs">
+            <img src="/logo.svg" alt="NeuralVoice Logo" className="w-full h-full object-contain rounded-xs" />
           </div>
           <span className="font-extrabold text-slate-800">NeuralVoice Studio</span>
           <span>&copy; {new Date().getFullYear()} AI Text-to-Speech Platform</span>
