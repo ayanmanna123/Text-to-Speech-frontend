@@ -39,17 +39,17 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
         
         {/* Left Brand Badge */}
         <div 
-          className="flex items-center gap-2 cursor-pointer group select-none" 
+          className="flex items-center gap-3 cursor-pointer group select-none" 
           onClick={() => setActiveTab('home')}
         >
-          <div className="w-8 h-8 bg-black text-white font-pixel flex items-center justify-center text-xs font-bold rounded-xs">
+          <div className="w-8 h-8 bg-black text-white font-pixel flex items-center justify-center text-xs font-bold rounded-[6px] shadow-xs group-hover:scale-105 transition-transform">
             NV
           </div>
-          <div className="flex items-center gap-1.5 font-pixel text-xs sm:text-sm tracking-tight text-black">
-            <span className="font-extrabold">NEURAL</span>
-            <span className="text-zinc-400">//</span>
-            <span className="text-black font-extrabold">VOICE</span>
-            <span className="text-[10px] font-pixel text-zinc-500 ml-1">2026</span>
+          <div className="flex items-center gap-1.5 font-pixel text-xs sm:text-sm tracking-wider text-black font-bold">
+            <span>NEURAL</span>
+            <span className="text-zinc-400 font-normal">//</span>
+            <span>VOICE</span>
+            <span className="text-[10px] font-pixel text-zinc-400 font-normal ml-1">2026</span>
           </div>
         </div>
 
