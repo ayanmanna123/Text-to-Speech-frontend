@@ -5,18 +5,16 @@ import { History } from 'lucide-react';
 
 export const HistoryPage = () => {
   return (
-    <div className="max-w-[1550px] mx-auto px-2 sm:px-4 lg:px-6 py-6 flex flex-col gap-6">
+    <div className="max-w-[1550px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6 font-sans">
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="p-2 rounded-xl bg-[#C9FDF2] text-[#084951] border border-[#85D1DB]/60">
-            <History className="w-5 h-5" />
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-            Generation History Log
+          <History className="w-5 h-5 text-black" />
+          <h1 className="text-3xl font-display font-extrabold text-black tracking-tight uppercase">
+            GENERATION HISTORY LOG
           </h1>
         </div>
-        <p className="text-sm text-muted-foreground max-w-2xl">
+        <p className="text-sm text-zinc-600 max-w-2xl font-sans">
           Review all synthesized speech audio clips created during your session. Play, re-use text, or download audio files.
         </p>
       </div>

@@ -47,10 +47,9 @@ export const AudioPlayer = () => {
     audio.onerror = (err) => {
       console.warn("Audio element failed to load or play source:", audioUrl, err);
       setIsPlaying(false);
-      setPlaybackError("Audio playback failed. The clip URL may be expired or inaccessible.");
+      setPlaybackError("Audio playback failed. Source URL may be expired or invalid.");
     };
 
-    // Autoplay disabled: play only if isPlaying state is already true (e.g. user clicked Play)
     if (isPlaying) {
       audio.play()
         .then(() => setIsPlaying(true))
@@ -78,7 +77,6 @@ export const AudioPlayer = () => {
       audioRef.current.pause();
     }
   }, [isPlaying]);
-
 
   if (!activeAudio) return null;
 
@@ -154,67 +152,67 @@ export const AudioPlayer = () => {
     const a = document.createElement('a');
     a.href = url;
     const cleanSnippet = (activeAudio.text || 'speech').slice(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
-    a.download = `${cleanSnippet}_${Date.now()}.${targetFormat}`;
+    a.download = `neural_${cleanSnippet}_${Date.now()}.${targetFormat}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
   const formatExt = (activeAudio?.format || 'mp3').toUpperCase();
-  const demoText = activeAudio.text || 'सपनों की आवाज़, अब हर शब्द में, आपके विचारों को मिलेगी एक नई ऊँचाई!';
+  const demoText = activeAudio.text || 'Synthesized speech output buffer.';
 
   return (
-    <div className="bg-white/30 backdrop-blur-md border border-[#d0f0ec] rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative animate-in fade-in slide-in-from-bottom-3 duration-300">
+    <div className="bg-white border border-zinc-200 p-5 shadow-xs flex flex-col gap-4 font-sans relative">
       
       {playbackError && (
-        <div className="p-3 rounded-xl bg-rose-50/80 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-mono font-bold flex items-center justify-between">
           <span>{playbackError}</span>
           <button type="button" onClick={() => setPlaybackError(null)} className="font-bold underline ml-2">Dismiss</button>
         </div>
       )}
       
-      {/* Audio Output Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Audio Header Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#85D1DB] via-[#B3EBF2] to-[#B6F2D1] text-[#062c30] flex items-center justify-center shadow-md shadow-[#85D1DB]/20 shrink-0">
-            <Music className="w-5 h-5 text-[#062c30]" />
+          <div className="w-10 h-10 bg-black text-white flex items-center justify-center shrink-0">
+            <Music className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="font-extrabold text-sm text-slate-900">Generated Audio Output</h4>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60">
+              <h4 className="font-extrabold text-sm text-black">GENERATED AUDIO STREAM</h4>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-zinc-100 text-black border border-zinc-200">
                 {activeAudio.voiceName || 'Neural Voice'}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/40 text-slate-600 border border-[#d0f0ec] backdrop-blur-xs">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600">
                 {playbackRate}x Speed
               </span>
             </div>
-            <p className="text-xs text-slate-500 italic line-clamp-1 max-w-lg mt-0.5 font-normal">
-              {demoText}
+            <p className="text-xs text-zinc-500 italic line-clamp-1 max-w-lg mt-0.5">
+              "{demoText}"
             </p>
           </div>
         </div>
 
         {/* Format Tag & Download CTA Button */}
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-          <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-[#C9FDF2]/80 text-[#084951] border border-[#85D1DB]/60 uppercase">
-            {formatExt}
+          <span className="text-xs font-mono font-extrabold px-2.5 py-1 bg-zinc-100 text-black border border-zinc-200 uppercase">
+            .{formatExt}
           </span>
 
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#85D1DB] via-[#66c2ce] to-[#B6F2D1] hover:from-[#72c7d2] hover:to-[#9eecc1] text-[#05262c] font-extrabold text-xs shadow-md shadow-[#85D1DB]/30 transition-all cursor-pointer"
+            className="btn-pill-black text-xs uppercase"
           >
-            <Download className="w-4 h-4" />
-            <span>Download .{formatExt}</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Download</span>
           </button>
         </div>
       </div>
 
       {/* Dynamic Waveform Visualizer */}
       <div 
-        className="flex items-center justify-center gap-1 h-14 px-4 bg-white/30 backdrop-blur-xs rounded-xl overflow-hidden cursor-pointer border border-[#d0f0ec] shadow-2xs group transition-all"
+        className="flex items-center justify-center gap-1 h-14 px-4 bg-zinc-50 border border-zinc-200 overflow-hidden cursor-pointer group"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
@@ -225,7 +223,7 @@ export const AudioPlayer = () => {
             setCurrentTime(targetTime);
           }
         }}
-        title="Click anywhere on the waveform to seek"
+        title="Click waveform to seek"
       >
         {Array.from({ length: 64 }).map((_, i) => {
           const progressRatio = currentTime / (duration || 5);
@@ -238,10 +236,10 @@ export const AudioPlayer = () => {
           return (
             <div
               key={i}
-              className={`w-1 rounded-full transition-all duration-100 ${
+              className={`w-1 transition-all duration-100 ${
                 isActive 
-                  ? 'bg-gradient-to-t from-[#85D1DB] via-[#B3EBF2] to-[#B6F2D1] shadow-2xs' 
-                  : 'bg-slate-300/60 group-hover:bg-slate-400/60'
+                  ? 'bg-black' 
+                  : 'bg-zinc-200 group-hover:bg-zinc-300'
               }`}
               style={{ height: `${height}px` }}
             />
@@ -249,44 +247,41 @@ export const AudioPlayer = () => {
         })}
       </div>
 
-      {/* Playback Scrubber & Control Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
+      {/* Playback Controls */}
+      <div className="flex flex-col sm:flex-row items-center gap-4">
         
-        {/* Play / Pause / Skip Buttons */}
+        {/* Play / Pause / Skip */}
         <div className="flex items-center gap-2">
-          {/* Rewind 10s */}
           <button
             type="button"
             onClick={() => handleSkip(-10)}
-            className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 border border-[#d0f0ec] text-slate-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
-            title="Rewind 10 seconds"
+            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-black flex items-center justify-center transition-all cursor-pointer"
+            title="Rewind 10s"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
-          {/* Play / Pause Circle Button */}
           <button
             type="button"
             onClick={togglePlay}
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#85D1DB] via-[#66c2ce] to-[#B6F2D1] text-[#05262c] flex items-center justify-center shadow-md shadow-[#85D1DB]/35 transition-transform hover:scale-105 active:scale-95 cursor-pointer font-bold"
+            className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-md transition-transform hover:scale-105 cursor-pointer font-bold"
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5 fill-current" />}
           </button>
 
-          {/* Forward 10s */}
           <button
             type="button"
             onClick={() => handleSkip(10)}
-            className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 border border-[#d0f0ec] text-slate-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
-            title="Forward 10 seconds"
+            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-black flex items-center justify-center transition-all cursor-pointer"
+            title="Forward 10s"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Scrubber Timeline */}
-        <div className="flex-1 w-full flex items-center gap-3">
-          <span className="text-xs font-mono font-medium text-slate-500 min-w-[36px] text-right">
+        {/* Timeline */}
+        <div className="flex-1 w-full flex items-center gap-3 font-mono text-xs">
+          <span className="font-bold text-black min-w-[36px] text-right">
             {formatTime(currentTime)}
           </span>
           <input
@@ -296,21 +291,20 @@ export const AudioPlayer = () => {
             step="0.1"
             value={currentTime}
             onChange={handleSeek}
-            className="flex-1 h-1.5 bg-[#d0f0ec]/60 rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
+            className="flex-1 h-1.5 bg-zinc-200 appearance-none cursor-pointer accent-black"
           />
-          <span className="text-xs font-mono font-medium text-slate-500 min-w-[36px]">
+          <span className="font-bold text-zinc-400 min-w-[36px]">
             {formatTime(duration || 5)}
           </span>
         </div>
 
-        {/* Speed Dropdown & Volume Control */}
-        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
-          {/* Speed Selector */}
+        {/* Speed & Volume */}
+        <div className="flex items-center gap-3 font-mono text-xs self-end sm:self-auto shrink-0">
           <div className="relative inline-flex items-center">
             <select
               value={playbackRate}
               onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-              className="text-xs font-extrabold bg-white/30 border border-[#d0f0ec] text-slate-800 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#85D1DB] cursor-pointer appearance-none pr-6 shadow-2xs backdrop-blur-xs"
+              className="font-bold bg-zinc-100 border border-zinc-200 text-black px-2.5 py-1 rounded-full focus:outline-none cursor-pointer appearance-none pr-5"
             >
               <option value="0.5">0.5x</option>
               <option value="0.75">0.75x</option>
@@ -319,12 +313,11 @@ export const AudioPlayer = () => {
               <option value="1.5">1.5x</option>
               <option value="2">2.0x</option>
             </select>
-            <ChevronDown className="w-3 h-3 text-slate-500 absolute right-2 pointer-events-none" />
+            <ChevronDown className="w-3 h-3 text-zinc-500 absolute right-1.5 pointer-events-none" />
           </div>
 
-          {/* Volume Control Slider */}
           <div className="hidden sm:flex items-center gap-1.5">
-            <button type="button" onClick={toggleMute} className="text-slate-500 hover:text-slate-800 transition-colors">
+            <button type="button" onClick={toggleMute} className="text-zinc-500 hover:text-black transition-colors">
               {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4" />}
             </button>
             <input
@@ -334,7 +327,7 @@ export const AudioPlayer = () => {
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-16 h-1.5 bg-[#d0f0ec] rounded-lg appearance-none cursor-pointer accent-[#85D1DB]"
+              className="w-16 h-1.5 bg-zinc-200 appearance-none cursor-pointer accent-black"
             />
           </div>
         </div>
@@ -343,4 +336,3 @@ export const AudioPlayer = () => {
     </div>
   );
 };
-

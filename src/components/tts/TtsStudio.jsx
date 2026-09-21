@@ -5,7 +5,7 @@ import { VoiceSelector } from './VoiceSelector';
 import { VoiceSettings } from './VoiceSettings';
 import { AudioPlayer } from './AudioPlayer';
 import { HistoryList } from './HistoryList';
-import { Loader2, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Zap, AlertCircle, CheckCircle2, Sliders } from 'lucide-react';
 
 export const TtsStudio = () => {
   const { text, selectedVoice, isGenerating, generateSpeech, error, setError, infoMessage, setInfoMessage } = useTtsContext();
@@ -24,7 +24,7 @@ export const TtsStudio = () => {
       .trim();
 
     if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) {
-      setError('Script text contains only unprintable control characters or non-speakable symbols. Please enter valid speakable words or text.');
+      setError('Script text contains only unprintable control characters or non-speakable symbols.');
       return;
     }
 
@@ -36,16 +36,29 @@ export const TtsStudio = () => {
   };
 
   return (
-    <div className="max-w-[1550px] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 flex flex-col gap-6">
+    <div className="max-w-[1550px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8 font-sans">
+
+      {/* Studio Header Bar */}
+      <div className="flex flex-col gap-1 border-b border-zinc-200 pb-4">
+        <div className="flex items-center gap-2">
+          <Sliders className="w-5 h-5 text-black" />
+          <h1 className="text-2xl sm:text-3xl font-display font-black text-black tracking-tight uppercase">
+            SPEECH SYNTHESIS STUDIO WORKSPACE
+          </h1>
+        </div>
+        <p className="text-xs sm:text-sm text-zinc-600 font-sans">
+          Enter your script text, select a neural voice driver, fine-tune stability & speed parameters, and synthesize audio.
+        </p>
+      </div>
 
       {/* Info Notice Banner */}
       {infoMessage && (
-        <div className="p-4 rounded-2xl bg-[#E6F9F5] border border-[#85D1DB]/70 text-[#084951] text-sm flex items-center justify-between shadow-xs animate-in fade-in">
-          <div className="flex items-center gap-2 font-medium">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1294a8]" />
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between shadow-xs font-mono">
+          <div className="flex items-center gap-2 font-bold">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{infoMessage}</span>
           </div>
-          <button type="button" onClick={() => setInfoMessage(null)} className="font-bold underline text-xs cursor-pointer ml-4 shrink-0 hover:text-[#062c30]">
+          <button type="button" onClick={() => setInfoMessage(null)} className="font-bold underline uppercase cursor-pointer ml-4 hover:text-black">
             Dismiss
           </button>
         </div>
@@ -53,12 +66,12 @@ export const TtsStudio = () => {
 
       {/* Error Alert Box */}
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center justify-between shadow-xs animate-in fade-in">
-          <div className="flex items-center gap-2">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center justify-between shadow-xs font-mono">
+          <div className="flex items-center gap-2 font-bold">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{error}</span>
           </div>
-          <button type="button" onClick={() => setError(null)} className="font-bold underline text-xs cursor-pointer ml-4 shrink-0 hover:text-rose-900">
+          <button type="button" onClick={() => setError(null)} className="font-bold underline uppercase cursor-pointer ml-4 hover:text-black">
             Dismiss
           </button>
         </div>
@@ -74,7 +87,7 @@ export const TtsStudio = () => {
         </div>
 
         {/* Right Column: Voice Selection, Fine-Tuning Controls, & Generate Speech CTA */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6 sticky top-6">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6 sticky top-20">
           <VoiceSelector />
           <VoiceSettings />
 
@@ -83,21 +96,21 @@ export const TtsStudio = () => {
             type="button"
             onClick={handleGenerateClick}
             disabled={isDisabled}
-            className={`w-full py-4 px-6 rounded-2xl font-extrabold text-base flex items-center justify-center gap-3 transition-all duration-200 border ${
+            className={`w-full py-4 px-6 font-display font-black text-base uppercase flex items-center justify-center gap-3 transition-all duration-200 shadow-md ${
               isDisabled
-                ? 'bg-slate-200 text-slate-400 border-slate-300/80 cursor-not-allowed shadow-none'
-                : 'bg-gradient-to-r from-[#85D1DB] via-[#6dc7d4] to-[#B6F2D1] hover:from-[#73c8d3] hover:to-[#a2efc4] text-[#05262c] border-transparent shadow-xl shadow-[#85D1DB]/35 hover:shadow-[#85D1DB]/50 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                ? 'bg-zinc-200 text-zinc-400 border border-zinc-300 cursor-not-allowed shadow-none'
+                : 'bg-black text-white hover:bg-zinc-800 active:scale-[0.99] cursor-pointer'
             }`}
           >
             {isGenerating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Synthesizing Speech...</span>
+                <span>SYNTHESIZING SPEECH...</span>
               </>
             ) : (
               <>
                 <Zap className="w-5 h-5 fill-current" />
-                <span>Generate Speech</span>
+                <span>GENERATE SPEECH</span>
               </>
             )}
           </button>
@@ -105,13 +118,11 @@ export const TtsStudio = () => {
 
       </div>
 
-
       {/* Generation History List Section */}
-      <div className="mt-8 pt-8 border-t border-[#d0f0ec]">
+      <div className="mt-8 pt-8 border-t border-zinc-200">
         <HistoryList />
       </div>
 
     </div>
   );
 };
-

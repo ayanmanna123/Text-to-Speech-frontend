@@ -1,0 +1,616 @@
+<role>
+You are an expert frontend engineer, UI/UX designer, visual design specialist, and typography expert. Your goal is to help the user integrate a design system into an existing codebase in a way that is visually consistent, maintainable, and idiomatic to their tech stack.
+
+You will codify the aesthetic of the provided webpage into a highly detailed, deeply comprehensive design system. This includes extracting and defining a theme based on the given CSS properties (colors, fonts, structure).
+
+Your output will be structured as a comprehensive Markdown document, adhering strictly to the provided template and level of detail. You must include specific CSS values, define shadowing styles, border styling, animation recommendations, and responsive layout guidelines. The document should feel like a professional design handoff, making deliberate, creative design choices (layout, motion, interaction details, and typography) that express the design system's personality instead of producing a generic or boilerplate UI. Ensure layouts are responsive and usable across devices.
+</role>
+
+<design-system>
+# Pixel Terminal Interface
+
+## 1. Design Philosophy
+**Core Principles**: The "Pixel Terminal Interface" design system is built on a foundation of stark contrast, digital nostalgia, and a command-line aesthetic. It prioritizes clarity and immediate information hierarchy through high contrast typography and flat, unadorned surfaces. The system evokes the raw, functional beauty of early computing interfaces, blending retro charm with modern responsiveness.
+
+**The Vibe**: Imagine a hacker's console, a retro arcade game menu, or the boot-up screen of an old operating system. This system is crisp, direct, and slightly edgy. It projects competence and a no-nonsense attitude, but with a playful nod to the pixelated past. There's a subtle tension between its simple forms and its vibrant, energetic accents.
+
+**Visual Signatures**:
+*   **High Contrast**: Predominantly black and white backgrounds with bold, impactful text.
+*   **Monospace Typography**: A strong reliance on fixed-width fonts for character and functional clarity.
+*   **Sharp Edges**: Zero border-radius for all elements, reinforcing a precise, digital cut.
+*   **Vibrant Accent**: A single, powerful orange (`#f97316`) cuts through the monochrome for emphasis and interaction.
+*   **Flat Surfaces**: Absence of shadows or gradients, maintaining a two-dimensional, screen-like quality.
+
+## 2. Design Token System (The DNA)
+### Colors (Extracted)
+```css
+/* Base Colors */
+--color-black: #000000;
+--color-white: #ffffff;
+
+/* Functional Grays */
+--color-gray-900: #050505; /* Near black, for subtle text or background variations */
+--color-gray-800: #1a1a1a; /* Darker text or outlines (inferred, for better contrast in specific cases) */
+--color-gray-700: #555555; /* Secondary text, inactive states, borders */
+--color-gray-600: #666666; /* Tertiary text, subtle dividers */
+--color-gray-400: #888888; /* Placeholder text, disabled states */
+
+/* Accent & Status Colors */
+--color-accent-primary: #f97316; /* Bright Orange - Primary interactive elements, highlights */
+--color-status-success: #16a34a; /* Vivid Green - Success messages, positive indicators */
+--color-status-error: #dc2626; /* Red - Error messages (inferred for completeness) */
+--color-status-warning: #facc15; /* Yellow - Warning messages (inferred for completeness) */
+
+/* Thematic Aliases */
+--color-background-primary: var(--color-black);
+--color-background-secondary: var(--color-white);
+--color-background-callout: var(--color-gray-900);
+
+--color-text-primary: var(--color-white); /* Default text on dark backgrounds */
+--color-text-secondary: var(--color-gray-400); /* Secondary text on dark backgrounds */
+--color-text-inverse: var(--color-black); /* Default text on light backgrounds */
+--color-text-inverse-secondary: var(--color-gray-700); /* Secondary text on light backgrounds */
+--color-text-accent: var(--color-accent-primary);
+--color-text-success: var(--color-status-success);
+
+--color-border-primary: var(--color-gray-700);
+--color-border-accent: var(--color-accent-primary);
+```
+
+### Typography
+**Font Stack**:
+*   **Primary Display/Headings**: `'Silkscreen', ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace, -apple-system, system-ui`
+*   **Body/Monospace Text**: `ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace, -apple-system, system-ui`
+*   **System Fallback (for non-monospace elements or when custom font fails)**: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'`
+
+**Scale & Styling**:
+The typographical scale is designed for readability and visual impact, leveraging `Silkscreen` for its distinct character.
+
+```css
+/* Font Families */
+--font-family-display: 'Silkscreen', var(--font-family-monospace);
+--font-family-monospace: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+--font-family-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+
+/* Font Sizes */
+--font-size-xxs: 0.75rem; /* 12px */
+--font-size-xs: 0.875rem; /* 14px */
+--font-size-sm: 1rem;     /* 16px - Base font size */
+--font-size-md: 1.125rem; /* 18px */
+--font-size-lg: 1.25rem;  /* 20px */
+--font-size-xl: 1.5rem;   /* 24px */
+--font-size-2xl: 2rem;    /* 32px */
+--font-size-3xl: 2.5rem;  /* 40px */
+--font-size-4xl: 3rem;    /* 48px */
+
+/* Line Heights */
+--line-height-tight: 1.1;
+--line-height-normal: 1.5;
+--line-height-relaxed: 1.7;
+
+/* Font Weights */
+--font-weight-regular: 400;
+--font-weight-medium: 500;
+--font-weight-semibold: 600; /* Used for buttons */
+--font-weight-bold: 700;
+
+/* Headings (using Silkscreen where appropriate) */
+h1, .text-h1 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-regular); /* Silkscreen often looks better at regular weight for large sizes */
+  color: var(--color-text-primary);
+}
+h2, .text-h2 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+h3, .text-h3 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+h4, .text-h4 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+h5, .text-h5 {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+h6, .text-h6 {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* Body Text */
+p, .text-body {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary); /* Default body text on dark background */
+}
+.text-body-inverse {
+  color: var(--color-text-inverse); /* Default body text on light background */
+}
+.text-small {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
+}
+.text-code {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  color: var(--color-accent-primary);
+  background-color: var(--color-gray-900);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0px;
+}
+```
+
+### Radius & Border
+All elements within the "Pixel Terminal Interface" system strictly adhere to sharp, unrounded corners to maintain the digital aesthetic. Borders are primarily used for structural definition and subtle emphasis.
+
+```css
+/* Border Radius */
+--border-radius-none: 0px;
+
+/* Border Widths */
+--border-width-sm: 1px;
+--border-width-md: 2px;
+--border-width-lg: 4px;
+
+/* Border Styles */
+--border-style-solid: solid;
+--border-style-dashed: dashed; /* For specific UI states like drag-and-drop areas */
+```
+
+### Shadows & Effects
+The "Pixel Terminal Interface" design system is explicitly flat. Shadows are deliberately omitted to preserve the 2D, screen-like quality. Depth is conveyed through contrast and spatial arrangement, not simulated light sources.
+
+```css
+/* Shadows */
+--shadow-none: none;
+/* No other shadow tokens are defined, ensuring a flat aesthetic. */
+```
+
+## 3. Component Stylings
+### Buttons
+Buttons are designed for high contrast and clear call-to-action, with immediate visual feedback on interaction.
+
+**Base Button Style**:
+```css
+.btn {
+  font-family: var(--font-family-monospace);
+  font-weight: var(--font-weight-semibold); /* 600 */
+  border-radius: var(--border-radius-none); /* 0px */
+  padding: 6px 12px;
+  cursor: pointer;
+  border: var(--border-width-sm) var(--border-style-solid) transparent; /* Default transparent border */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  transition: background-color 0.2s linear, color 0.2s linear, border-color 0.2s linear;
+}
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px var(--color-background-primary), 0 0 0 4px var(--color-accent-primary);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+```
+
+**Button Variants**:
+*   **Primary Action (Solid Black)**:
+    ```css
+    .btn-primary {
+      background-color: var(--color-black);
+      color: var(--color-white);
+      border-color: var(--color-black); /* Matching border for solid look */
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--color-accent-primary);
+      color: var(--color-black); /* Text changes to inverse to stand out on orange */
+      border-color: var(--color-accent-primary);
+    }
+    .btn-primary:active:not(:disabled) {
+      background-color: var(--color-gray-900); /* Slightly darker on click */
+      color: var(--color-accent-primary);
+      border-color: var(--color-gray-900);
+    }
+    ```
+*   **Secondary Action (Outlined/Inverse)**:
+    ```css
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--color-black); /* Text color for white background */
+      border-color: var(--color-gray-700);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--color-accent-primary);
+      color: var(--color-black);
+      border-color: var(--color-accent-primary);
+    }
+    .btn-secondary:active:not(:disabled) {
+      background-color: var(--color-gray-400);
+      color: var(--color-black);
+      border-color: var(--color-gray-400);
+    }
+    ```
+*   **Accent Action (Solid Orange)**:
+    ```css
+    .btn-accent {
+      background-color: var(--color-accent-primary);
+      color: var(--color-black); /* Text color to pop on orange */
+      border-color: var(--color-accent-primary);
+    }
+    .btn-accent:hover:not(:disabled) {
+      background-color: var(--color-white);
+      color: var(--color-accent-primary);
+      border-color: var(--color-accent-primary);
+    }
+    .btn-accent:active:not(:disabled) {
+      background-color: var(--color-gray-400);
+      color: var(--color-black);
+      border-color: var(--color-gray-400);
+    }
+    ```
+*   **Text/Link Button**:
+    ```css
+    .btn-text {
+      background-color: transparent;
+      color: var(--color-accent-primary);
+      border-color: transparent;
+      padding: 0;
+      min-height: unset; /* Override default button height */
+    }
+    .btn-text:hover:not(:disabled) {
+      text-decoration: underline;
+      color: var(--color-white); /* On dark background */
+    }
+    .btn-text:active:not(:disabled) {
+      color: var(--color-gray-400);
+    }
+    ```
+
+### Cards/Containers
+Cards and sections are structural elements designed for clear content separation on a predominantly monochromatic canvas, maintaining the sharp, flat aesthetic.
+
+**Base Card/Section Style**:
+```css
+.card, .section {
+  background-color: var(--color-background-secondary); /* #ffffff */
+  border-radius: var(--border-radius-none); /* 0px */
+  box-shadow: var(--shadow-none); /* No shadows */
+  padding: 56px 0px 80px; /* Base vertical padding */
+  border: var(--border-width-sm) solid var(--color-border-primary); /* Subtle outline */
+}
+```
+
+**Card Variants**:
+*   **Standard Card**: For grouping related content, typically within a larger section or grid.
+    ```css
+    .card-standard {
+      background-color: var(--color-white);
+      color: var(--color-text-inverse); /* Text on light background */
+      padding: var(--spacing-xl); /* 20px */
+      border: var(--border-width-sm) solid var(--color-gray-600);
+    }
+    ```
+*   **Hero Section**: Full-width content block, often with primary messaging.
+    ```css
+    .section-hero {
+      background-color: var(--color-black);
+      color: var(--color-text-primary);
+      padding: 80px 0px 120px; /* More generous vertical padding */
+      border-bottom: var(--border-width-md) solid var(--color-accent-primary); /* Strong visual separation */
+    }
+    ```
+*   **Callout Section**: Used for important alerts or secondary information.
+    ```css
+    .section-callout {
+      background-color: var(--color-gray-900); /* #050505 */
+      color: var(--color-text-primary);
+      padding: var(--spacing-3xl) var(--spacing-xl); /* 40px 20px */
+      border: var(--border-width-sm) solid var(--color-accent-primary);
+    }
+    ```
+*   **Content Block (Inner Container)**: For content within a section, to provide internal padding.
+    ```css
+    .content-block {
+      max-width: 1200px; /* Example max-width for content constraint */
+      margin: 0 auto;
+      padding: 0 var(--spacing-xl); /* Horizontal padding for responsive gutters */
+    }
+    ```
+
+### Inputs
+Input fields are designed for clarity and functionality, featuring sharp borders and clear state indicators.
+
+**Base Input Style**:
+```css
+.input-base {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-inverse); /* For use on light backgrounds */
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-700);
+  border-radius: var(--border-radius-none);
+  padding: var(--spacing-xs) var(--spacing-sm); /* 8px 12px */
+  transition: border-color 0.2s linear, box-shadow 0.2s linear;
+  width: 100%; /* Default to full width */
+}
+.input-base::placeholder {
+  color: var(--color-gray-400);
+}
+.input-base:hover {
+  border-color: var(--color-gray-600);
+}
+.input-base:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px var(--color-accent-primary); /* Subtle outer glow for focus */
+}
+.input-base:disabled {
+  background-color: var(--color-gray-100); /* Lighter gray for disabled (inferred) */
+  color: var(--color-gray-400);
+  cursor: not-allowed;
+}
+.input-base.error {
+  border-color: var(--color-status-error);
+  box-shadow: 0 0 0 2px var(--color-status-error);
+}
+
+/* Specific Input Types */
+.input-text, .input-email, .input-password, .input-number {
+  /* Inherit from .input-base */
+}
+
+textarea.input-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+select.input-select {
+  /* Custom arrow for select (SVG or pseudo-element) */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555555'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px; /* Make space for the arrow */
+}
+
+/* Checkboxes and Radios */
+.input-checkbox, .input-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: var(--border-width-sm) solid var(--color-gray-700);
+  border-radius: var(--border-radius-none);
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+  margin-right: var(--spacing-xs);
+  position: relative;
+}
+.input-checkbox:checked, .input-radio:checked {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}
+.input-checkbox:checked::before {
+  content: 'X'; /* Simple checkmark for retro feel */
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-xs);
+  color: var(--color-black);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.input-radio {
+  border-radius: 50%; /* Radios are round */
+}
+.input-radio:checked::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-black);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+```
+
+## 4. Layout Strategy
+The layout strategy embraces a responsive grid system with a strong emphasis on consistent spacing, built upon a modular scale derived from the extracted `spacing` values. This ensures elements align precisely and maintain visual rhythm, much like a well-structured terminal output.
+
+**Spacing System**:
+```css
+/* Spacing Scale */
+--spacing-xxs: 4px;
+--spacing-xs: 8px;
+--spacing-sm: 12px;
+--spacing-md: 16px;
+--spacing-lg: 20px;
+--spacing-xl: 32px; /* Inferred: 2x 16px */
+--spacing-2xl: 48px; /* Inferred: 3x 16px */
+--spacing-3xl: 64px; /* Inferred: 4x 16px */
+--spacing-4xl: 80px; /* Extracted from card padding */
+--spacing-5xl: 120px; /* Inferred for larger sections */
+```
+
+**Grid Patterns**:
+A 12-column flexible grid system is recommended for robust and responsive layouts.
+```css
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* Mobile first */
+  gap: var(--spacing-md); /* Default gap */
+}
+
+@media (min-width: 640px) { /* Small screens */
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 768px) { /* Medium screens */
+  .grid-md-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-md-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) { /* Large screens */
+  .grid-lg-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .col-span-1 { grid-column: span 1 / span 1; }
+  .col-span-2 { grid-column: span 2 / span 2; }
+  /* ... up to col-span-12 */
+}
+
+/* Layout Containers */
+.container {
+  max-width: 1280px; /* Or a specific value like 1024px for a more constrained feel */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md); /* Responsive padding */
+  padding-right: var(--spacing-md);
+}
+@media (min-width: 768px) {
+  .container {
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+  }
+}
+```
+
+**Responsive Design Considerations**:
+*   **Mobile-First**: Design and develop for small screens first, progressively enhancing for larger viewports.
+*   **Vertical Rhythm**: Leverage the generous vertical padding of sections (`56px 0px 80px`) and consistent `--spacing` tokens to maintain a clear vertical rhythm, especially for content blocks.
+*   **Typography Scaling**: Use `rem` units for font sizes and ensure responsive scaling for headings on smaller devices.
+*   **Fluid Images**: `max-width: 100%; height: auto;` for all images to prevent overflow.
+
+## 5. Non-Genericness (THE BOLD FACTOR)
+The "Pixel Terminal Interface" theme thrives on deliberate, stylized choices that elevate it beyond a standard flat design. These bold factors are crucial for embedding the unique personality of the design system.
+
+*   **Retro Scanline Overlay**: A subtle, semi-transparent CSS pseudo-element overlaying the entire application or specific sections, mimicking a CRT monitor's scanlines. This adds an immediate, almost subliminal retro texture.
+    ```css
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.03) 0.5px,
+        transparent 1px
+      );
+      z-index: 9999; /* Ensure it's on top */
+    }
+    ```
+*   **Text Glitch Effect for Key Actions**: On hover or focus of critical interactive elements (e.g., primary buttons, navigation links), apply a brief, subtle "glitch" or "flicker" animation to the text content using `text-shadow` or `filter: blur`. This is a signature effect, reinforcing the digital aesthetic.
+*   **Monochromatic Pixel Art Icons**: For any iconography, commit to a stark, 1-bit or low-color pixel art style that directly aligns with the `Silkscreen` font and overall retro digital vibe. No modern, smooth vector icons.
+*   **Command Prompt-Style Text Cursors**: For inputs and text areas, instead of the default blinking line, use a block cursor (`caret-color: var(--color-accent-primary);`). For active text elements, perhaps a subtle background blink.
+*   **Content Sections with "Terminal Frame" Border**: Specific content blocks could feature a double border, or a border combined with a background pattern that mimics old terminal window bezels, perhaps with small, non-functional "window controls" (e.g., `_` `[]` `X` symbols).
+
+## 6. Effects & Animation
+Animations are purposeful, lean, and complement the digital theme, avoiding overly fluid or organic motions.
+
+*   **Text Cursor Blink**: For primary call-to-action buttons or dynamic text, implement a subtle, block-style cursor animation at the end of the text.
+    ```css
+    @keyframes blink-cursor {
+      50% { opacity: 0; }
+    }
+    .text-blink-cursor::after {
+      content: '|'; /* Or a solid block character */
+      animation: blink-cursor 1s step-end infinite;
+      display: inline-block;
+      width: 8px; /* Width of the block cursor */
+      background-color: var(--color-accent-primary);
+      margin-left: 2px;
+    }
+    ```
+*   **"Typewriter" Text Reveal**: For hero sections or dynamic content, animate text appearance character-by-character.
+    ```css
+    /* Requires JS to animate characters, but CSS sets the baseline */
+    .typewriter-text {
+      width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 2px solid transparent; /* Mimic cursor */
+      animation: typing 3s steps(30, end) forwards,
+                 blink-cursor 0.75s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    ```
+*   **High-Contrast Hover**: Button hovers use direct color swaps with a `linear` transition, reflecting the immediate, binary nature of digital states.
+    ```css
+    /* Example: refer to button variants transitions */
+    transition: background-color 0.2s linear, color 0.2s linear, border-color 0.2s linear;
+    ```
+*   **"De-rez" Transition (for modals/dialogs)**: When a modal closes, instead of a fade or slide, consider animating its opacity and `transform: scale()` down to 0, or `filter: pixelate()` combined with opacity to simulate a "de-rezzing" effect, then disappearing.
+
+## 7. Iconography
+Iconography is a critical element in reinforcing the "Pixel Terminal Interface" aesthetic.
+
+**Icon Style Recommendation**:
+*   **Pixel Art / 1-bit**: All icons should be designed or sourced as monochromatic pixel art. They should look like they could have been rendered on an early monochrome display.
+*   **Sharp & Geometric**: Lines should be crisp, straight, and at right angles where possible. Curves should be approximated with pixels, embracing the inherent aliasing.
+*   **Limited Detail**: Icons should be simplistic and instantly recognizable, avoiding intricate details that would blur at small sizes.
+*   **Color**: Primarily `var(--color-white)` or `var(--color-black)`, with `var(--color-accent-primary)` used sparingly for active states or critical indicators.
+*   **Implementation**: SVG is preferred for scalability, but the SVGs themselves should render with a pixelated aesthetic. Custom font icons are also an option if carefully crafted in a pixel style.
+
+**Example Icon Usage**:
+*   Loading indicators: Simple spinning pixelated ASCII characters (`/`, `-`, `\`, `|`)
+*   Checkmarks: A bold `X` or a pixelated checkmark.
+*   Arrows: Simple triangles made of pixels.
+
+```html
+<!-- Example of a pixel-art SVG icon -->
+<svg class="icon icon-alert-pixel" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <rect x="7" y="2" width="2" height="6"/>
+  <rect x="7" y="10" width="2" height="2"/>
+</svg>
+```
+```css
+.icon {
+  display: inline-block;
+  width: 1em; /* Inherit font size for scalable icons */
+  height: 1em;
+  vertical-align: -0.125em; /* Adjust alignment */
+  fill: currentColor;
+}
+.icon-alert-pixel {
+  color: var(--color-status-error);
+}
+```
+</design-system>
